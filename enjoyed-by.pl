@@ -13,6 +13,7 @@ use strict;
 # perl -x $HOME\bin\enjoyed-by.pl stchinian2010.txt -csv stchinian2010.csv
 
 my $csv;
+my $html;
 my $f;
 my $test;
 my $verbose = 1;
@@ -22,9 +23,14 @@ while ($_ = shift) {
     $csv = shift || die "-csv FILE";
     print "CSV: [$csv]\n";
   }
+  elsif ($_ eq '-html') {
+    $html = shift || die "-html FILE";
+    print "HTML: [$html]\n";
+  }
   elsif ($_ eq '-test') {
     $test = 1;
     $csv = "&STDOUT";
+    $html = "&STDOUT";
     $f = "<&DATA";
   }
   elsif ($_ eq '-v') {
@@ -38,8 +44,13 @@ while ($_ = shift) {
 $f || die "Need filename";
 
 open(F, $f) || die "cannot open input file [$f]: $!";
+
 if ($csv) {
     open(CSV, ">$csv") || die "cannot open output CSV file [$csv]: $!";
+}
+
+if ($html) {
+    open(HTML, ">$html") || die "cannot open output HTML file [$html]: $!";
 }
 
 sub bad {
@@ -51,6 +62,19 @@ sub getline {
     $_ = <F>;
     s/ *#.*//g;
     return $_;
+}
+
+sub tdc ($$) {
+    my ($class,$item) = @_;
+    return "<td class=\"$class\">$item</td>";
+}
+
+sub tdcur ($) {
+    return tdc "cur", shift;
+}
+
+sub tdtxt ($) {
+    return tdc "txt", shift;
 }
 
 my %person = ();
@@ -86,7 +110,7 @@ while ($_ = &getline) {
       my @A = split("\t");
       $#A == 4 || die "Wrong number of fields: $_";
       $A[0] =~ / *[0-9.]/ || die "Bad Amount [$A[0]]";
-      $A[1] =~ /[^A-Za-z]/ && die "Bad currency code [$A[1]]";
+      $A[1] =~ /[^A-Za-z£]/ && die "Bad currency code [$A[1]]";
       my $rec = {
 	 amount => $A[0],
 	 currency => $A[1],
@@ -108,7 +132,7 @@ while ($_ = &getline) {
       }
       my @A = split("\t");
       $#A == 1 || $#A == 2 || &bad;
-      $A[0] =~ /[^A-Za-z]/ && die "Bad currency code [$A[0]]";
+      $A[0] =~ /[^A-Za-z£]/ && die "Bad currency code [$A[0]]";
       $A[1] =~ /[^0-9.]/ && die "Bad rate [$A[0]]";
       $currency{$A[0]} = $A[1];
       if ($A[2]) {
@@ -137,7 +161,39 @@ if ($csv) {
   print CSV "\n";
 }
 
+if ($html) {
+    print HTML <<'EHEAD';
+<html>
+<head>
+<style type="text/css" media=screen>
+   table {border-color:#ddd}
+   tr.odd    { background-color:#ddd; border-width:5 }
+   tr.even    { background-color:#dfd; }
+   td.cur {color:#000088;text-align=right}
+   td.txt {}
+</style>
+</head>
+EHEAD
+    print HTML "<body>\n";
+    print HTML "<table>\n<thead><tr>\n";
+    print HTML tdc "hd", "Item";
+    print HTML tdc "hd", "Currency";
+    print HTML tdc "hd", "Amount";
+    print HTML tdc "hd", "HCU";
+    print HTML tdc "hd", "Payer";
+    my $npersons = $#personkeys + 1;
+    print HTML "\n  <td colspan=$npersons align=center>Enjoyed by</td></tr>\n";
+    print HTML "\n  <tr><td colspan=5></td>";
+    foreach my $p (@personkeys) {
+	print HTML tdc "hd", $person{$p};
+    }
+    print HTML "</tr></thead>\n";
+    print HTML "<tbody>\n";
+}
+
+my $rownumber = 0;
 foreach my $e (@expenses) {
+  ++$rownumber;
   my $amt0 = $e->{amount};
   my $amt = $amt0;
 
@@ -155,6 +211,16 @@ foreach my $e (@expenses) {
     print CSV $q . $amt0 . "$q,";
     print CSV $q . $amt . "$q,";
     print CSV $q . $person{$e->{payer}} . "$q";
+  }
+
+  if ($html) {
+      my $rowclass = ($rownumber % 2 == 0) ? "odd": "even";
+      print HTML "<tr class=$rowclass>";
+      print HTML tdtxt $e->{item};
+      print HTML tdcur $currencyname{$currency};
+      print HTML tdcur sprintf("%.2f",$amt0);
+      print HTML tdcur sprintf("%.2f",$amt);
+      print HTML tdtxt $person{$e->{payer}};
   }
 
   # Who paid?
@@ -223,6 +289,18 @@ foreach my $e (@expenses) {
     print CSV "\n";
   }
 
+  if ($html) {
+    foreach my $p (@personkeys) {
+      my $used_delta = $amt * $item_used{$p} / $totalused;
+      if ($p eq $e->{payer}) {
+	print HTML sprintf('<td title="Enjoyed %.2f, Paid %.2f)" class="cur">%.2f</td>', $used_delta, $amt, $used_delta- $amt);
+      } else {
+	print HTML tdcur sprintf('%.2f', $used_delta);
+      }
+    }
+    print HTML "</tr>\n";
+  }
+
 }
 
 if ($csv) {
@@ -262,6 +340,16 @@ if ($test) {
   if ($balance{'k'} != 768.00) {
     die "*** TEST FAILURE *** $balance{'k'}\n";
   }
+}
+
+if ($html) {
+  print HTML "<tr><td colspan=5 align=right class=txt>Totals:</td>";
+  my $lastrow = $#expenses + 2;
+  foreach my $p (@personkeys) {
+    print HTML tdcur sprintf('%.2f', $balance{$p});
+  }
+  print HTML "</tr>\n";
+  print HTML "</tbody></table>\n";
 }
 
 
