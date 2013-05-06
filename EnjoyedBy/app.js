@@ -1,3 +1,34 @@
+function togglevis(e) {
+    e.style.display = e.style.display != "block" ? "block" : "none";
+    dlog('elt[' + e.toString() + '] -> [' + e.style.display + ']');
+}
+function ddclick(e) {
+    togglevis(elt('ddul'));
+}
+function ddselect(e) {
+    var element = e.target;
+    var ul = findSelfOrParent(element, 'ul');
+    var dl = findSelfOrParent(element, 'dl');
+    var a = findSelfOrParent(element, 'a');
+    togglevis(ul);
+    (dl.firstElementChild.firstChild).innerHTML = a.innerHTML;
+}
+//----
+function findSelfOrParent(e, tag) {
+    var p = e;
+    for(; ; ) {
+        if(p.parentElement == p) {
+            throw "zoiks";
+        }
+        if(p == null) {
+            return p;
+        }
+        if(p.tagName.toLowerCase() == tag) {
+            return p;
+        }
+        p = p.parentElement;
+    }
+}
 function make_element(html) {
     var div = document.createElement('div');
     div.innerHTML = html;
@@ -59,6 +90,7 @@ var EnjoyedBy = (function () {
         var _this = this;
         this.onclick_timeout = new Array();
         this.table_expenses = elt('table_expenses');
+        // (<HTMLTableElement>elt('design-time-expenses')).innerHTML = '';
         var button_add_item = elt('button_add_item');
         var button_add_person = elt('button_add_person');
         this.content = elt('content');
@@ -68,21 +100,27 @@ var EnjoyedBy = (function () {
         button_add_person.onclick = function () {
             return _this.add_person();
         };
+        // If using the demo, add input handlers...
         var tbl = this.table_expenses;
         var nPeople = this.nPeople();
         for(var c = 0; c < nPeople; ++c) {
+            // Person inputs on row 1
             var ie = (tblcell(tbl, 1, c + 4).firstChild);
             ie.onchange = function (e) {
                 return _this.changed_element(e, true);
             };
+            // and add "delete" buttons on last row
             tblcell(tbl, tbl.rows.length - 1, c + 1).innerHTML = '<button class="x-button">x</button>';
             this.add_del_handlers(tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
         }
         this.make_select_element();
         var nItems = this.nItems();
         for(var ii = 0; ii < nItems; ++ii) {
+            // Replace dummy input from default.htm with new person selector
             this.itemCell(ii, -1).innerHTML = this.select_html;
-            (this.itemCell(ii, -1).firstChild).selectedIndex = (ii == 2 ? 1 : 0);
+            (this.itemCell(ii, -1).firstChild).selectedIndex = (ii == 2 ? 1 : 0)// Make veggie pay for third item
+            ;
+            // Replace event handlers on item rows.
             for(var c = -4; c < nPeople; ++c) {
                 var ie = (this.itemCell(ii, c).firstChild);
                 ie.onchange = function (e) {
@@ -94,10 +132,10 @@ var EnjoyedBy = (function () {
         this.update_all();
     }
     EnjoyedBy.prototype.nItems = function () {
-        return this.table_expenses.rows.length - 2 - 3 - 1;
+        return this.table_expenses.rows.length - 2/* headers */  - 3/* totals */  - 1/* delete buttons */ ;
     };
     EnjoyedBy.prototype.nPeople = function () {
-        return tblrow(this.table_expenses, 1).cells.length - 5;
+        return tblrow(this.table_expenses, 1).cells.length - 5/* item, amt, cur, payer , delete button */ ;
     };
     EnjoyedBy.prototype.itemRow = function (i) {
         return tblrow(this.table_expenses, 2 + i);
@@ -109,7 +147,7 @@ var EnjoyedBy = (function () {
         return tblrow(this.table_expenses, 2 + this.nItems() + i);
     };
     EnjoyedBy.prototype.totCell = function (i, p) {
-        return tblcell(this.table_expenses, 2 + this.nItems() + i, p + 2);
+        return tblcell(this.table_expenses, 2 + this.nItems() + i, p + 2/* button + colspan4 header */ );
     };
     EnjoyedBy.prototype.make_select_element = function () {
         var nPeople = this.nPeople();
@@ -119,7 +157,8 @@ var EnjoyedBy = (function () {
             this.select_html += "<option>" + person + "</option>";
         }
         this.select_html += '</select>';
-    };
+        //select_element = <HTMLSelectElement>make_element(this.select_html);
+            };
     EnjoyedBy.prototype.update_all = function () {
         var tbl = this.table_expenses;
         var row1 = tblrow(tbl, 1);
@@ -136,6 +175,7 @@ var EnjoyedBy = (function () {
         var payers = new Array(nItems);
         var amounts = new Array(nItems);
         var currencies = new Array(nItems);
+        // Loop over itemrows
         var all_valid = true;
         for(var item_ind = 0; item_ind < nItems; ++item_ind) {
             proportions[item_ind] = new Array(nPeople);
@@ -143,7 +183,9 @@ var EnjoyedBy = (function () {
             function cel(c) {
                 return row.cells[c];
             }
+            // Item description
             var item = (cel(0).firstChild).value;
+            // Set amount to 2 dp
             var amount_ie = cel(1).firstChild;
             var amount = 0;
             if(amount_ie.value != '') {
@@ -157,8 +199,10 @@ var EnjoyedBy = (function () {
                 amount_ie.className = 'amount-td-inval';
                 all_valid = false;
             }
+            // Currency
             var cur = (cel(2).firstChild).value;
             currencies[item_ind] = cur;
+            // Validate payer
             var payer_ie = cel(3).firstChild;
             var pid = people[payer_ie.value];
             if(!pid) {
@@ -168,11 +212,13 @@ var EnjoyedBy = (function () {
                 payer_ie.className = 'person-select';
                 payers[item_ind] = pid;
             }
+            // Fix proportions
             for(var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = prop_cell.firstChild;
                 var prop = parseFloat(prop_ie.value);
                 if(prop >= 0) {
+                    // note must fail for nan
                     prop_cell.className = 'prop-td';
                     proportions[item_ind][c] = prop;
                 } else {
@@ -191,6 +237,7 @@ var EnjoyedBy = (function () {
             }
             return;
         }
+        // all valid.  First set style on total cells, then compute...
         elt('content').innerHTML = '';
         var total_enjoyed = new Array(nPeople);
         var total_paid = new Array(nPeople);
@@ -225,10 +272,12 @@ var EnjoyedBy = (function () {
             this.totCell(2, c).innerHTML = (total_paid[c] - total_enjoyed[c]).toFixed(2);
         }
     };
-    EnjoyedBy.prototype.update_enjoyed_by = function () {
+    EnjoyedBy.prototype.update_enjoyed_by = // Update the "enjoyed by" td's colspan
+    function () {
         var nPeople = this.nPeople();
         var eb_td = elt('eb-td');
-        eb_td.colSpan = nPeople > 0 ? nPeople : 1;
+        eb_td.colSpan = nPeople > 0 ? nPeople : 1// zero colspan not allowed, let's just leave the table improper
+        ;
     };
     EnjoyedBy.prototype.update_name_selectors = function (deletedPerson) {
         if (typeof deletedPerson === "undefined") { deletedPerson = -1; }
@@ -252,6 +301,7 @@ var EnjoyedBy = (function () {
     EnjoyedBy.prototype.changed_element = function (e, names_changed) {
         if (typeof names_changed === "undefined") { names_changed = false; }
         var ie = e.target;
+        //log('change [' + e.target + '] -> ' + ie.value);
         if(names_changed) {
             this.update_name_selectors();
         }
@@ -262,19 +312,23 @@ var EnjoyedBy = (function () {
             clearTimeout(this.onclick_timeout.pop());
         }
     };
-    EnjoyedBy.prototype.add_del_handlers = function (b, person) {
+    EnjoyedBy.prototype.add_del_handlers = // Horrid bool is because the continuation doesn't appear to define "this" sensibly.
+    function (b, person) {
         var _this = this;
+        // Publish a warning on single-click, but wait to ensure the double click didn't happen.
         b.onclick = function () {
             _this.onclick_timeout.push(setTimeout(function () {
                 return warn('Need to double-click or long-click to delete');
             }, 200));
         };
+        // Long dwell on mousedown will also delete
         b.onmouseup = function () {
             _this.mouse_is_down = false;
         };
         b.onmousedown = function (e) {
             _this.mouse_is_down = true;
             _this.onclick_timeout.push(setTimeout(function () {
+                // If we come back 700ms later, and mouse is still down, delete...
                 if(_this.mouse_is_down) {
                     if(person) {
                         _this.del_person(e);
@@ -294,25 +348,31 @@ var EnjoyedBy = (function () {
     };
     EnjoyedBy.prototype.add_person = function () {
         var _this = this;
+        // And add a column to the items table.
         var tbl = this.table_expenses;
         var row1 = tblrow(tbl, 1);
         var old_nPeople = this.nPeople();
         var val = 'Person' + (old_nPeople + 1);
+        // People cells in row 1
         var ie = addcell(row1, '<input class="person-td" type="text" value="' + val + '"/>', old_nPeople + 4);
         ie.onchange = function (e) {
             return _this.changed_element(e, true);
         };
+        // Add column to all item rows
         var nItems = this.nItems();
         for(var i = 0; i < nItems; ++i) {
+            // Add at second-last column
             var ie = addcell(this.itemRow(i), '<input class="prop-td" type="text" value="1" />', old_nPeople + 4);
             ie.onchange = function (e) {
                 return _this.changed_element(e);
             };
         }
+        // Add column to the total rows
         for(var t = 0; t < 3; ++t) {
             addcell(this.totRow(t), 'tot', old_nPeople + 2);
             this.totCell(t, old_nPeople).className = 'tot-td';
         }
+        // Add delete button to last row
         var e = addcell(tblrow(tbl, tbl.rows.length - 1), '<button class="x-button">x</button>', old_nPeople + 1);
         e.parentElement.className = 'tot-td';
         this.add_del_handlers(e, true);
@@ -323,27 +383,34 @@ var EnjoyedBy = (function () {
     EnjoyedBy.prototype.del_person = function (e) {
         this.clear_timeouts();
         var cell = (e.target).parentElement;
-        var personNumber = cell.cellIndex - 1;
+        var personNumber = cell.cellIndex - 1;// we're on the last row. Person 0 is cell 1
+        
         dlog('deleting person' + personNumber);
         if(this.nPeople() <= 1) {
             warn("Won't delete the last person.  Just change their name?");
             return;
         }
+        // And delete columns from expenses
         var tbl = this.table_expenses;
+        // People cells in row 1
         tblrow(tbl, 1).deleteCell(personNumber + 4);
+        // Del column from all item rows
         var nItems = this.nItems();
         for(var i = 0; i < nItems; ++i) {
             this.itemRow(i).deleteCell(personNumber + 4);
         }
+        // Delete total on 2nd last row
         for(var t = 0; t < 3; ++t) {
             this.totRow(t).deleteCell(personNumber + 2);
         }
+        // Delete button on last row
         tblrow(tbl, tbl.rows.length - 1).deleteCell(personNumber + 1);
         this.update_name_selectors(personNumber);
         this.update_enjoyed_by();
         this.update_all();
     };
-    EnjoyedBy.prototype.a = function (row, s) {
+    EnjoyedBy.prototype.a = // Can't make this a function in add_item as the this is mangled.
+    function (row, s) {
         var _this = this;
         var ie = addcell(row, s);
         ie.onchange = function (e) {
@@ -381,3 +448,4 @@ var EnjoyedBy = (function () {
 window.onload = function () {
     var eb = new EnjoyedBy();
 };
+//@ sourceMappingURL=app.js.map

@@ -1,3 +1,40 @@
+
+function togglevis(e: HTMLElement) {
+    e.style.display  = e.style.display != "block" ? "block" : "none";
+    dlog('elt[' + e.toString() + '] -> [' + e.style.display + ']');
+}
+
+function ddclick(e: Event) {
+    togglevis(elt('ddul'));
+}
+
+function ddselect(e: Event) {
+    var element = <HTMLElement>e.target;
+    var ul = <HTMLUListElement>findSelfOrParent(element, 'ul');
+    var dl = <HTMLDListElement>findSelfOrParent(element, 'dl');
+    var a = <HTMLAnchorElement>findSelfOrParent(element, 'a');
+    togglevis(ul);
+    (<HTMLAnchorElement>dl.firstElementChild.firstChild).innerHTML = a.innerHTML;
+}
+
+//----
+
+function findSelfOrParent(e: HTMLElement, tag: string) {
+    var p = e;
+    for (; ;) {
+        if (p.parentElement == p)
+            throw "zoiks";
+
+        if (p == null)
+            return p;
+
+        if (p.tagName.toLowerCase() == tag)
+            return p;
+
+        p = p.parentElement;
+    }
+}
+
 function make_element(html: string): HTMLElement {
     var div = <HTMLDivElement>document.createElement('div');
     div.innerHTML = html;

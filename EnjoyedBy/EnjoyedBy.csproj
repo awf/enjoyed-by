@@ -17,7 +17,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
-    <Content Include="default.htm" />
+    <Content Include="images\cc-tick.png" />
+    <Content Include="images\cc-x.png" />
+    <Content Include="images\down-arrow.png" />
+    <Content Include="index.html" />
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
@@ -29,7 +32,6 @@
   <ItemGroup>
     <Content Include="web.config" />
     <None Include="fitzie.pubxml" />
-    <Content Include="README.md" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
