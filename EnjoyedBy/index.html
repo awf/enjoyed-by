@@ -58,6 +58,23 @@
     </style>
 </head>
 <body>
+                 <dl id="dropdown_dl" class="dropdown">
+                    <dt><a href="#" onclick="javascript:ddclick(event);"><img height="16" src="images/cc-tick.png" /></a></dt>
+                    <dd>
+                        <ul id="ddul">
+                            <li><a href="#" onclick="javascript:ddselect(event);">
+                                <img height="16" src="images/cc-tick.png" />
+                            </a></li>
+                            <li><a href="#" onclick="javascript:ddselect(event);">
+                                <img height="16" src="images/cc-x.png" />
+                            </a></li>
+                            <li><a href="#" onclick="javascript:ddselect(event);">
+                                <input style="height: 16px;" type="text" value="0.5" class="prop-td" title="Part-share (0 to 1)"/>
+                            </a></li>
+                        </ul>
+                    </dd>
+                </dl>
+
     <div id="expenses">
         <table id="table_expenses" class="tbl-expenses">
             <thead>
