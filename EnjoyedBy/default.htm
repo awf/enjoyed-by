@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>EnjoyedBy: The group expenses arbitrator</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="app.js"></script>
+    <style type="text/css" >
+
+        .message-div {
+            background-color: lightgray;
+        }
+        .message-div-active-1 {
+            background-color: palegreen;
+        }
+        .message-div-active-2 {
+            background-color: green;
+        }
+        .tbl-expenses {
+            background-color: aliceblue;
+            border: 0px;
+        }
+        .x1-button {
+            border-style: groove; 
+            border-width: 3px; 
+            margin:0 0 0 0;
+            height: 32px;
+            width: 32px;
+            background-image: url("images/x-button.png");
+        }
+        .item-td {
+            min-width: 5em;
+            width:20em;
+        }
+        .amount-td, .amount-td-inval  {
+            width: 3em;
+            text-align: right;
+        }
+        .currency-td {
+            width: 40px;
+        }
+        .person-td, .person-td-inval  {
+            width: 4.5em;
+        }
+        .prop-td, .prop-td-inval {
+            width: 2em;
+            text-align: right;
+        }
+        .tot-td, .tot-td-inval  {
+            width: 3em;
+            text-align: right;
+            align-content: flex-end;
+        }
+        .amount-td-inval, .person-td-inval, .prop-td-inval, .tot-td-inval {
+            background-color: palevioletred;
+        }
+    </style>
+</head>
+<body>
+    <div id="expenses">
+        <table id="table_expenses" class="tbl-expenses">
+            <thead>
+                <tr>
+                    <td colspan="4">
+                        <div style="color: royalblue; font-size: small;">
+                            <span style="font-style: italic;">EnjoyedBy</span>: the group expenses arbitrator.
+                        </div>
+                    </td>
+                    <td id='eb-td' colspan="3" style="text-align: center">Enjoyed by</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Item</td>
+                    <td>Amount</td>
+                    <td>Currency</td>
+                    <td>Paid by</td>
+                    <td><input class="person-td" type="text" value="Andrew" /></td>
+                    <td><input class="person-td" type="text" value="Veggie" /></td>
+                    <td><input class="person-td" type="text" value="Pioneer" /></td>
+                    <td><button id="button_add_person" title="Add person">+</button></td>
+                  </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input class="item-td" type="text" value="Salt" /></td>
+                    <td><input class="amount-td" type="text" value="6" /></td>
+                    <td><input class="currency-td" type="text" value="GBP" /></td>
+                    <td><input class="person-td-inval" type="text" value="Andrew" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><button id="button_del_item">x</button></td>
+                </tr>
+                <tr>
+                    <td><input class="item-td" type="text" value="Beef" /></td>
+                    <td><input class="amount-td-inval" type="text" value="10" /></td>
+                    <td><input class="currency-td" type="text" value="GBP" /></td>
+                    <td><input class="person-dd" type="text" value="Andrew" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><input class="prop-td" type="text" value="0" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><button id="button2">x</button></td>
+                </tr>
+                <tr>
+                    <td><input class="item-td" type="text" value="Wine" /></td>
+                    <td><input class="amount-td" type="text" value="14" /></td>
+                    <td><input class="currency-td" type="text" value="GBP" /></td>
+                    <td><input class="person-td" type="text" value="Veggie" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td><input class="prop-td" type="text" value="0" /></td>
+                    <td><button id="button3">x</button></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td><button id="button_add_item">Add Item</button></td>
+                    <td colspan="3" style="text-align: right; font-weight: bold">Total Enjoyed:</td>
+                    <td class="tot-td">**</td>
+                    <td class="tot-td-inval">**</td>
+                    <td class="tot-td">**</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3" style="text-align: right; font-weight: bold">Total Paid:</td>
+                    <td class="tot-td">**</td>
+                    <td class="tot-td-inval">**</td>
+                    <td class="tot-td">**</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3" style="text-align: right; font-weight: bold">Balance (Positive means you're owed):</td>
+                    <td class="tot-td">**</td>
+                    <td class="tot-td-inval">**</td>
+                    <td class="tot-td">**</td>
+                </tr>
+                <tr>
+                    <td class="message-div" id="content" colspan="4">Messages</td>
+                    <td class="tot-td">x</td>
+                    <td class="tot-td">x</td>
+                    <td class="tot-td">x</td>
+                </tr>
+             </tfoot>
+        </table>
+    </div>
+    <div id="log">
+
+    </div>
+    
+</body>
+</html>

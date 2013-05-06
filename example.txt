@@ -1,0 +1,23 @@
+
+PEOPLE:
+a	Andrew
+k	Katie
+j	Jamie
+
+
+EXPENSES:
+Amount	CUR	Payer	Users	Item
+------	---	-----	-----	----
+30	£	a		Wine
+1200	EUR	k	*,a(0.5)	Flat
+100	EUR	k	a	payment
+60	c	a	!j	BLACKCOMB LIQUOR STOWHISTLER BC	
+50	£	a	a,k	ELEMENTS URBAN TAPASWHISTLER BC	
+120	£	k	a,a,j,k	ELEMENTS URBAN TAPASWHISTLER BC	
+
+CURRENCIES:
+Code	HCU	Name
+----	---	--------
+c	.5	CAD
+EUR	.9	EUR
+£	1.0	GBP
