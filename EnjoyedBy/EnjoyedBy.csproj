@@ -29,6 +29,7 @@
   <ItemGroup>
     <Content Include="web.config" />
     <None Include="fitzie.pubxml" />
+    <Content Include="README.md" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
