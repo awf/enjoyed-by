@@ -111,45 +111,74 @@ class EnjoyedBy {
         this.content = <HTMLDivElement>elt('content');
         this.newprop_html = elt('newprop-proto').outerHTML;
 
+        this.make_select_html();
         this.dropdown_hide();
 
         button_add_item.onclick = () => this.add_item();
         button_add_person.onclick = () => this.add_person();
 
-        // If using the demo, add input handlers...
-        var tbl = this.table_expenses;
-        var nPeople = this.nPeople();
-        for (var c = 0; c < nPeople; ++c) {
-            // Person inputs on row 1
-            var ie = <HTMLInputElement>(tblcell(tbl, 1, c + 4).firstChild);
-            ie.onchange = (e: Event) => this.changed_element(e, true);
-
-            // and add "delete" buttons on last row
-            tblcell(tbl, tbl.rows.length - 1, c + 1).innerHTML = '<button class="x-button">x</button>';
-            this.add_del_handlers(<HTMLButtonElement>tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
+        var url_params = document.location.search;
+        if (url_params == '') {
+            url_params = 'person0=Andrew&person1=Veggie&person2=Pioneer&' +
+            'item0=Beef&amt0=10&cur0=GBP&payer0=Andrew&prop0_0=1&prop0_1=0&prop0_2=1&' +
+            'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&prop1_0=1&prop1_1=1&prop1_2=0&' +
+            'item2=Nuts&amt2=6&cur2=GBP&payer2=Veggie&prop2_0=0.5&prop2_1=1&prop2_2=1&done=1';
         }
 
-        this.make_select_html();
+        if (0) {
+            // If using the demo, add input handlers...
+            var tbl = this.table_expenses;
+            var nPeople = this.nPeople();
+            for (var c = 0; c < nPeople; ++c) {
+                // Person inputs on row 1
+                var ie = <HTMLInputElement>(tblcell(tbl, 1, c + 4).firstChild);
+                ie.onchange = (e: Event) => this.changed_element(e, true);
 
-        // Replace dummy input from default.htm with new person selector
-        var nItems = this.nItems();
-        for (var ii = 0; ii < nItems; ++ii) {
-            var paidby_cell = this.itemCell(ii, -1);
-            var paidby_select = <HTMLSelectElement>paidby_cell.firstChild
-            paidby_cell.innerHTML = this.select_html;
-            paidby_select.selectedIndex = (ii == 2 ? 1 : 0);  // Make veggie pay for third item 
+                // and add "delete" buttons on last row
+                tblcell(tbl, tbl.rows.length - 1, c + 1).innerHTML = '<button class="x-button">x</button>';
+                this.add_del_handlers(<HTMLButtonElement>tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
+            }
 
-            // Replace event handlers on item rows.
-            for (var c = -4; c < 0; ++c)
-                this.set_change_handler(<HTMLElement>this.itemCell(ii, c).firstChild);
-            
-            for (var c = 0; c < nPeople; ++c)
-                this.set_proportion_handlers(this.itemCell(ii, c));
+            // Replace dummy input from default.htm with new person selector
+            var nItems = this.nItems();
+            for (var ii = 0; ii < nItems; ++ii) {
+                var paidby_cell = this.itemCell(ii, -1);
+                paidby_cell.innerHTML = this.select_html;
+                var paidby_select = <HTMLSelectElement>paidby_cell.firstChild
+                paidby_select.selectedIndex = (ii == 2 ? 1 : 0);  // Make veggie pay for third item
 
-            // Add handler to delete button on last cell of row
-            this.add_del_handlers(<HTMLButtonElement>(this.itemCell(ii, nPeople).firstChild), false);
+                // Replace event handlers on item rows.
+                for (var c = -4; c < 0; ++c)
+                    this.set_change_handler(<HTMLElement>this.itemCell(ii, c).firstChild);
+
+                for (var c = 0; c < nPeople; ++c)
+                    this.set_proportion_handlers(this.itemCell(ii, c));
+
+                // Add handler to delete button on last cell of row
+                this.add_del_handlers(<HTMLButtonElement>(this.itemCell(ii, nPeople).firstChild), false);
+            }
         }
-        
+        else {
+            // Parse url parameters to build tableau
+            var qs = url_params.split("+").join(" ");
+
+            var params = {};
+            var re = /[?&]?([^=]+)=([^&]*)/g;
+
+            var matches;
+            while (matches = re.exec(qs))
+                params[decodeURIComponent(matches[1])] = decodeURIComponent(matches[2]);
+
+            // First count people.  Brute force, as huge numbers of people will kill anything else anyway;
+            var nPeople = 0;
+            var person;
+            while ((person = params['person' + nPeople]) != undefined) {
+                dlog('add person' + nPeople + ': [' + person + ']');
+                this.add_person();
+                (<HTMLInputElement>this.itemCell(-1, nPeople).firstChild).value = person;
+                ++nPeople;
+            }
+        }
        this.update_all();
     }
 
@@ -260,13 +289,13 @@ class EnjoyedBy {
             currencies[item_ind] = cur;
 
             // Validate payer
-            var payer_ie = <HTMLInputElement>cel(3).firstChild;
+            var payer_ie = <HTMLSelectElement>cel(3).firstChild;
             var pid = people[payer_ie.value];
             if (!pid) {
-                payer_ie.className = 'person-select-inval';
+                payer_ie.className = 'payer-select-inval';
                 all_valid = false;
             } else {
-                payer_ie.className = 'person-select';
+                payer_ie.className = 'payer-select';
                 payers[item_ind] = pid;
             }
             this.save_string += "payer" + item_ind + "=" + encodeURIComponent(payer_ie.value) + '&';
@@ -286,10 +315,10 @@ class EnjoyedBy {
                     all_valid = false;
                 }
             }
-            this.save_string += 'd=1';
 
             elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">Save</a>'; 
         }
+        this.save_string += 'done=1';
 
         if (!all_valid) {
             warn('Invalid fields: Totals not computed');

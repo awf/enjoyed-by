@@ -50,6 +50,10 @@ span {
     width: 4.5em;
 }
 
+.payer-select, .payer-select-inval {
+    width: 4.5em;
+}
+
 .prop-td, .prop-td-inval {
     width: 2em;
     /*text-align: right;*/
@@ -62,7 +66,7 @@ span {
     align-content: flex-end;
 }
 
-.amount-td-inval, .person-td-inval, .prop-td-inval, .tot-td-inval {
+.amount-td-inval, .person-td-inval, .prop-td-inval, .tot-td-inval, .payer-select-inval  {
     background-color: palevioletred;
 }
 

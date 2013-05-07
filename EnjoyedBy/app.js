@@ -116,8 +116,8 @@ var EnjoyedBy = (function () {
         var nItems = this.nItems();
         for(var ii = 0; ii < nItems; ++ii) {
             var paidby_cell = this.itemCell(ii, -1);
-            var paidby_select = paidby_cell.firstChild;
             paidby_cell.innerHTML = this.select_html;
+            var paidby_select = paidby_cell.firstChild;
             paidby_select.selectedIndex = (ii == 2 ? 1 : 0)// Make veggie pay for third item
             ;
             // Replace event handlers on item rows.
@@ -234,10 +234,10 @@ var EnjoyedBy = (function () {
             var payer_ie = cel(3).firstChild;
             var pid = people[payer_ie.value];
             if(!pid) {
-                payer_ie.className = 'person-select-inval';
+                payer_ie.className = 'payer-select-inval';
                 all_valid = false;
             } else {
-                payer_ie.className = 'person-select';
+                payer_ie.className = 'payer-select';
                 payers[item_ind] = pid;
             }
             this.save_string += "payer" + item_ind + "=" + encodeURIComponent(payer_ie.value) + '&';
