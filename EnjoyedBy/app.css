@@ -2,8 +2,8 @@
     font-family: 'Segoe UI', sans-serif;
 }
 
-span {
-    font-style: italic;
+#table_expenses thead td {
+    font-size: small;
 }
 
 .message-div {
@@ -47,11 +47,12 @@ span {
 }
 
 .person-td, .person-td-inval {
-    width: 4.5em;
+    width: 5.5em;
 }
 
 .payer-select, .payer-select-inval {
-    width: 4.5em;
+    width: 7em;
+    border: 2px solid black;
 }
 
 .prop-td, .prop-td-inval {
@@ -97,7 +98,6 @@ span {
 }
 
 .prop-td input[type=image], .dropdown input[type=image] {
-    background: white;
     border: 0px;
     height: 16px;
     width: 16px;

@@ -5,9 +5,16 @@ function assert(x: bool) {
     throw 'assert failed';
 }
 
-function togglevis(e: HTMLElement) {
-    e.style.display  = e.style.display != "block" ? "block" : "none";
-    dlog('elt[' + e.toString() + '] -> [' + e.style.display + ']');
+function assertn(x: any) {
+    assert(x != null);
+}
+
+function elt(id: string): HTMLElement {
+    return document.getElementById(id);
+}
+
+function test_onload() {
+    elt('test').innerHTML = '';
 }
 
 //----
@@ -40,10 +47,6 @@ function tblrow(tbl: HTMLTableElement, index: number): HTMLTableRowElement {
 
 function tblcell(tbl: HTMLTableElement, r: number, c: number): HTMLTableCellElement {
     return <HTMLTableCellElement>(<HTMLTableRowElement>tbl.rows[r]).cells[c];
-}
-
-function elt(id: string): HTMLElement {
-    return document.getElementById(id);
 }
 
 function log(s: string) {
@@ -100,7 +103,9 @@ class EnjoyedBy {
     //select_element: HTMLSelectElement;
     select_html: string;
     dropdown_menu: HTMLDivElement;
-    newprop_html: string;
+    newprop_1_html: string;
+    newprop_0_html: string;
+    newprop_frac_html: string;
 
     constructor() {
         this.table_expenses = <HTMLTableElement>elt('table_expenses');
@@ -109,7 +114,9 @@ class EnjoyedBy {
         var button_add_person = elt('button_add_person');
         this.dropdown_menu = <HTMLDivElement>elt('dropdown_menu');
         this.content = <HTMLDivElement>elt('content');
-        this.newprop_html = elt('newprop-proto').outerHTML;
+        this.newprop_1_html = elt('newprop-proto-1').outerHTML;
+        this.newprop_0_html = elt('newprop-proto-0').outerHTML;
+        this.newprop_frac_html = elt('newprop-proto-frac').outerHTML;
 
         this.make_select_html();
         this.dropdown_hide();
@@ -119,46 +126,23 @@ class EnjoyedBy {
 
         var url_params = document.location.search;
         if (url_params == '') {
-            url_params = 'person0=Andrew&person1=Veggie&person2=Pioneer&' +
-            'item0=Beef&amt0=10&cur0=GBP&payer0=Andrew&prop0_0=1&prop0_1=0&prop0_2=1&' +
-            'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&prop1_0=1&prop1_1=1&prop1_2=0&' +
-            'item2=Nuts&amt2=6&cur2=GBP&payer2=Veggie&prop2_0=0.5&prop2_1=1&prop2_2=1&done=1';
-        }
+            if (0)
+                // Make a demo
 
-        if (0) {
-            // If using the demo, add input handlers...
-            var tbl = this.table_expenses;
-            var nPeople = this.nPeople();
-            for (var c = 0; c < nPeople; ++c) {
-                // Person inputs on row 1
-                var ie = <HTMLInputElement>(tblcell(tbl, 1, c + 4).firstChild);
-                ie.onchange = (e: Event) => this.changed_element(e, true);
-
-                // and add "delete" buttons on last row
-                tblcell(tbl, tbl.rows.length - 1, c + 1).innerHTML = '<button class="x-button">x</button>';
-                this.add_del_handlers(<HTMLButtonElement>tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
-            }
-
-            // Replace dummy input from default.htm with new person selector
-            var nItems = this.nItems();
-            for (var ii = 0; ii < nItems; ++ii) {
-                var paidby_cell = this.itemCell(ii, -1);
-                paidby_cell.innerHTML = this.select_html;
-                var paidby_select = <HTMLSelectElement>paidby_cell.firstChild
-                paidby_select.selectedIndex = (ii == 2 ? 1 : 0);  // Make veggie pay for third item
-
-                // Replace event handlers on item rows.
-                for (var c = -4; c < 0; ++c)
-                    this.set_change_handler(<HTMLElement>this.itemCell(ii, c).firstChild);
-
-                for (var c = 0; c < nPeople; ++c)
-                    this.set_proportion_handlers(this.itemCell(ii, c));
-
-                // Add handler to delete button on last cell of row
-                this.add_del_handlers(<HTMLButtonElement>(this.itemCell(ii, nPeople).firstChild), false);
+                url_params = 'person0=Andrew&person1=Veggie&person2=Pioneer&' +
+                'item0=Beef&amt0=10&cur0=GBP&payer0=Andrew&prop0_0=1&prop0_1=0&prop0_2=1&' +
+                'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&prop1_0=1&prop1_1=1&prop1_2=0&' +
+                'item2=Nuts&amt2=6&cur2=GBP&payer2=Veggie&prop2_0=0.5&prop2_1=1&prop2_2=1&done=1';
+            else {
+                // empty page...
+                this.add_person();
+                this.add_person();
+                this.add_person();
+                this.add_item();
             }
         }
-        else {
+
+        if (url_params != '') {
             // Parse url parameters to build tableau
             var qs = url_params.split("+").join(" ");
 
@@ -172,14 +156,44 @@ class EnjoyedBy {
             // First count people.  Brute force, as huge numbers of people will kill anything else anyway;
             var nPeople = 0;
             var person;
+            var people2id = {};
             while ((person = params['person' + nPeople]) != undefined) {
-                dlog('add person' + nPeople + ': [' + person + ']');
+                people2id[person] = nPeople;
                 this.add_person();
                 (<HTMLInputElement>this.itemCell(-1, nPeople).firstChild).value = person;
                 ++nPeople;
             }
+
+            this.make_select_html();
+
+            // Now add items.  Each is encoded thus:
+            //  'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&prop1_0=1&prop1_1=1&prop1_2=0&' +
+            var nItems = 0;
+            var item;
+            while ((item = params['item' + nItems]) != undefined) {
+                var i = nItems++;
+                this.add_item();
+                (<HTMLInputElement>this.itemCell(i, -4).firstChild).value = item;
+                (<HTMLInputElement>this.itemCell(i, -3).firstChild).value = params['amt' + i];
+                (<HTMLInputElement>this.itemCell(i, -2).firstChild).value = params['cur' + i];
+                (<HTMLSelectElement>this.itemCell(i, -1).firstChild).selectedIndex = people2id[params['payer' + i]];
+                for (var c = 0; c < nPeople; ++c) {
+                    var td = this.itemCell(i, c);
+                    var propval = params['prop' + i + '_' + c];
+                    if (propval == 1)
+                        td.innerHTML = this.newprop_1_html;
+                    else if (propval == 0)
+                        td.innerHTML = this.newprop_0_html;
+                    else {
+                        td.innerHTML = this.newprop_frac_html;
+                        (<HTMLInputElement>td.firstChild).value = propval;
+                    }
+                    this.set_proportion_handlers(td);
+                }
+            }
         }
-       this.update_all();
+
+        this.update_all();
     }
 
     set_change_handler(he: HTMLElement, will_change_people_names: bool = false) {
@@ -210,14 +224,18 @@ class EnjoyedBy {
         return tblrow(this.table_expenses, 2 + this.nItems() + i);
     }
 
+    totCellIndex(i: number, p: number) {
+        return p + 2 /* button + colspan4 header */;
+    }
+
     totCell(i: number, p: number) {
-        return tblcell(this.table_expenses, 2 + this.nItems() + i, p + 2 /* button + colspan4 header */);
+        return tblcell(this.table_expenses, 2 + this.nItems() + i, this.totCellIndex(i,p));
     }
 
     make_select_html() {
         var nPeople = this.nPeople();
 
-        this.select_html = '<select id="person-select">';
+        this.select_html = '<select class="payer-select">';
         for (var c = 0; c < nPeople; ++c) {
             var person = (<HTMLInputElement>tblcell(this.table_expenses, 1, 4 + c).firstChild).value;
             this.select_html += "<option>" + person + "</option>";
@@ -226,10 +244,9 @@ class EnjoyedBy {
     }
 
     dropdown_hide() {
-        this.dropdown_menu.style.left = "" + 0 + "px";;
-        this.dropdown_menu.style.top = "" + 0 + "px";;
+        this.dropdown_menu.style.left = "" + 0 + "px";
+        this.dropdown_menu.style.top = "" + 0 + "px";
         this.dropdown_menu.style.display = 'none';
-
     }
 
     save_string: string;
@@ -274,7 +291,7 @@ class EnjoyedBy {
             if (amount_ie.value != '') {
                 var amount: number = parseFloat(amount_ie.value);
             }
-            if (amount > 0) {
+            if (amount >= 0) {
                 amount_ie.className = 'amount-td';
                 amounts[item_ind] = amount;
                 amount_ie.value = amount.toFixed(2);
@@ -316,7 +333,7 @@ class EnjoyedBy {
                 }
             }
 
-            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">Save</a>'; 
+            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">permalink</a>'; 
         }
         this.save_string += 'done=1';
 
@@ -493,13 +510,13 @@ class EnjoyedBy {
         var nItems = this.nItems();
         for (var i = 0; i < nItems; ++i) {
             // Add at second-last column
-            var ie = <HTMLInputElement>addcell(this.itemRow(i), this.newprop_html, old_nPeople + 4);
+            var ie = <HTMLInputElement>addcell(this.itemRow(i), this.newprop_1_html, old_nPeople + 4);
             this.set_proportion_handlers(<HTMLTableCellElement>ie.parentElement);
         }
 
         // Add column to the total rows
         for (var t = 0; t < 3; ++t) {
-            addcell(this.totRow(t), 'tot', old_nPeople + 2);
+            addcell(this.totRow(t), 'tot', this.totCellIndex(t, old_nPeople));
             this.totCell(t, old_nPeople).className = 'tot-td';
         }
 
@@ -533,7 +550,7 @@ class EnjoyedBy {
             this.itemRow(i).deleteCell(personNumber + 4);
         // Delete total on 2nd last row
         for (var t = 0; t < 3; ++t)
-            this.totRow(t).deleteCell(personNumber + 2);
+            this.totRow(t).deleteCell(this.totCellIndex(t, personNumber));
         
         // Delete button on last row
         tblrow(tbl, tbl.rows.length - 1).deleteCell(personNumber + 1);
@@ -563,7 +580,7 @@ class EnjoyedBy {
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for (var p = 0; p < nPeople; ++p) {
-            var ie = this.a(row, this.newprop_html);
+            var ie = this.a(row, this.newprop_1_html);
             this.set_proportion_handlers(<HTMLTableCellElement>ie.parentElement);
         }
         var b = addcell(row, '<button id="button_del_item">x</button>');
@@ -583,5 +600,6 @@ class EnjoyedBy {
 }
 
 window.onload = () => {
+    elt('test').innerHTML = '';
     var eb = new EnjoyedBy();
 };

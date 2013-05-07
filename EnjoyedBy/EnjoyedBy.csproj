@@ -17,6 +17,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="images\32px-tick.png" />
+    <Content Include="images\32px-x.png" />
     <Content Include="images\cc-tick.png" />
     <Content Include="images\cc-x.png" />
     <Content Include="images\down-arrow.png" />
