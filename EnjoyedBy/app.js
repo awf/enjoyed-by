@@ -1,30 +1,25 @@
+function assert(x) {
+    if(x) {
+        return;
+    }
+    throw 'assert failed';
+}
 function togglevis(e) {
     e.style.display = e.style.display != "block" ? "block" : "none";
     dlog('elt[' + e.toString() + '] -> [' + e.style.display + ']');
-}
-function ddclick(e) {
-    togglevis(elt('ddul'));
-}
-function ddselect(e) {
-    var element = e.target;
-    var ul = findSelfOrParent(element, 'ul');
-    var dl = findSelfOrParent(element, 'dl');
-    var a = findSelfOrParent(element, 'a');
-    togglevis(ul);
-    (dl.firstElementChild.firstChild).innerHTML = a.innerHTML;
 }
 //----
 function findSelfOrParent(e, tag) {
     var p = e;
     for(; ; ) {
-        if(p.parentElement == p) {
-            throw "zoiks";
-        }
         if(p == null) {
             return p;
         }
-        if(p.tagName.toLowerCase() == tag) {
+        if(p.tagName == tag) {
             return p;
+        }
+        if(p.parentElement == p) {
+            throw "zoiks";
         }
         p = p.parentElement;
     }
@@ -93,7 +88,10 @@ var EnjoyedBy = (function () {
         // (<HTMLTableElement>elt('design-time-expenses')).innerHTML = '';
         var button_add_item = elt('button_add_item');
         var button_add_person = elt('button_add_person');
+        this.dropdown_menu = elt('dropdown_menu');
         this.content = elt('content');
+        this.newprop_html = elt('newprop-proto').outerHTML;
+        this.dropdown_hide();
         button_add_item.onclick = function () {
             return _this.add_item();
         };
@@ -113,24 +111,43 @@ var EnjoyedBy = (function () {
             tblcell(tbl, tbl.rows.length - 1, c + 1).innerHTML = '<button class="x-button">x</button>';
             this.add_del_handlers(tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
         }
-        this.make_select_element();
+        this.make_select_html();
+        // Replace dummy input from default.htm with new person selector
         var nItems = this.nItems();
         for(var ii = 0; ii < nItems; ++ii) {
-            // Replace dummy input from default.htm with new person selector
-            this.itemCell(ii, -1).innerHTML = this.select_html;
-            (this.itemCell(ii, -1).firstChild).selectedIndex = (ii == 2 ? 1 : 0)// Make veggie pay for third item
+            var paidby_cell = this.itemCell(ii, -1);
+            var paidby_select = paidby_cell.firstChild;
+            paidby_cell.innerHTML = this.select_html;
+            paidby_select.selectedIndex = (ii == 2 ? 1 : 0)// Make veggie pay for third item
             ;
             // Replace event handlers on item rows.
-            for(var c = -4; c < nPeople; ++c) {
-                var ie = (this.itemCell(ii, c).firstChild);
-                ie.onchange = function (e) {
-                    return _this.changed_element(e, c == -1);
-                };
+            for(var c = -4; c < 0; ++c) {
+                this.set_change_handler(this.itemCell(ii, c).firstChild);
             }
+            for(var c = 0; c < nPeople; ++c) {
+                this.set_proportion_handlers(this.itemCell(ii, c));
+            }
+            // Add handler to delete button on last cell of row
             this.add_del_handlers((this.itemCell(ii, nPeople).firstChild), false);
         }
         this.update_all();
     }
+    EnjoyedBy.prototype.set_change_handler = function (he, will_change_people_names) {
+        if (typeof will_change_people_names === "undefined") { will_change_people_names = false; }
+        var _this = this;
+        he.onchange = function (e) {
+            return _this.changed_element(e, will_change_people_names);
+        };
+    };
+    EnjoyedBy.prototype.set_proportion_handlers = function (td) {
+        var _this = this;
+        td.onclick = function (e) {
+            return _this.propClick(e);
+        };
+        (td.firstChild).onchange = function (e) {
+            return _this.changed_element(e, false);
+        };
+    };
     EnjoyedBy.prototype.nItems = function () {
         return this.table_expenses.rows.length - 2/* headers */  - 3/* totals */  - 1/* delete buttons */ ;
     };
@@ -149,7 +166,7 @@ var EnjoyedBy = (function () {
     EnjoyedBy.prototype.totCell = function (i, p) {
         return tblcell(this.table_expenses, 2 + this.nItems() + i, p + 2/* button + colspan4 header */ );
     };
-    EnjoyedBy.prototype.make_select_element = function () {
+    EnjoyedBy.prototype.make_select_html = function () {
         var nPeople = this.nPeople();
         this.select_html = '<select id="person-select">';
         for(var c = 0; c < nPeople; ++c) {
@@ -157,18 +174,26 @@ var EnjoyedBy = (function () {
             this.select_html += "<option>" + person + "</option>";
         }
         this.select_html += '</select>';
-        //select_element = <HTMLSelectElement>make_element(this.select_html);
-            };
+    };
+    EnjoyedBy.prototype.dropdown_hide = function () {
+        this.dropdown_menu.style.left = "" + 0 + "px";
+        ;
+        this.dropdown_menu.style.top = "" + 0 + "px";
+        ;
+        this.dropdown_menu.style.display = 'none';
+    };
     EnjoyedBy.prototype.update_all = function () {
         var tbl = this.table_expenses;
         var row1 = tblrow(tbl, 1);
         var nPeople = this.nPeople();
+        this.save_string = '';
         var people = {
         };
         for(var c = 0; c < nPeople; ++c) {
             var cell = tblcell(tbl, 1, c + 4);
             var input = cell.firstChild;
             people[input.value] = c + 1;
+            this.save_string += "person" + c + "=" + encodeURIComponent(input.value) + '&';
         }
         var nItems = this.nItems();
         var proportions = new Array(nItems);
@@ -185,8 +210,10 @@ var EnjoyedBy = (function () {
             }
             // Item description
             var item = (cel(0).firstChild).value;
+            this.save_string += "item" + item_ind + "=" + encodeURIComponent(item) + '&';
             // Set amount to 2 dp
             var amount_ie = cel(1).firstChild;
+            this.save_string += "amt" + item_ind + "=" + encodeURIComponent(amount_ie.value) + '&';
             var amount = 0;
             if(amount_ie.value != '') {
                 var amount = parseFloat(amount_ie.value);
@@ -201,6 +228,7 @@ var EnjoyedBy = (function () {
             }
             // Currency
             var cur = (cel(2).firstChild).value;
+            this.save_string += "cur" + item_ind + "=" + encodeURIComponent(cur) + '&';
             currencies[item_ind] = cur;
             // Validate payer
             var payer_ie = cel(3).firstChild;
@@ -212,10 +240,12 @@ var EnjoyedBy = (function () {
                 payer_ie.className = 'person-select';
                 payers[item_ind] = pid;
             }
+            this.save_string += "payer" + item_ind + "=" + encodeURIComponent(payer_ie.value) + '&';
             // Fix proportions
             for(var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = prop_cell.firstChild;
+                this.save_string += "prop" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
                 var prop = parseFloat(prop_ie.value);
                 if(prop >= 0) {
                     // note must fail for nan
@@ -226,6 +256,8 @@ var EnjoyedBy = (function () {
                     all_valid = false;
                 }
             }
+            this.save_string += 'd=1';
+            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">Save</a>';
         }
         if(!all_valid) {
             warn('Invalid fields: Totals not computed');
@@ -255,11 +287,9 @@ var EnjoyedBy = (function () {
             for(var p = 0; p < nPeople; ++p) {
                 var prop = proportions[i][p] / propsum;
                 total_enjoyed[p] += amount * prop;
-                (this.itemCell(i, p).firstChild).title = 'Enjoyed: ' + (amount * prop).toFixed(2) + ' ' + currencies[i];
-                (this.itemCell(i, p).firstChild).onmouseover = function (e) {
-                    return msg((e.target).title);
-                };
-            }
+                //(<HTMLInputElement>this.itemCell(i, p).firstChild).title = 'Enjoyed: ' + (amount*prop).toFixed(2) + ' ' + currencies[i];
+                //(<HTMLInputElement>this.itemCell(i, p).firstChild).onmouseover = (e) => msg((<HTMLInputElement>e.target).title);
+                            }
         }
         for(var t = 0; t < 3; ++t) {
             for(var c = 0; c < nPeople; ++c) {
@@ -281,11 +311,11 @@ var EnjoyedBy = (function () {
     };
     EnjoyedBy.prototype.update_name_selectors = function (deletedPerson) {
         if (typeof deletedPerson === "undefined") { deletedPerson = -1; }
-        this.make_select_element();
+        this.make_select_html();
         var nItems = this.nItems();
         for(var i = 0; i < nItems; ++i) {
-            var s = this.itemCell(i, -1).firstChild;
-            var last = s.selectedIndex;
+            var paidby_select = this.itemCell(i, -1).firstChild;
+            var last = paidby_select.selectedIndex;
             if(deletedPerson != -1) {
                 if(last == deletedPerson) {
                     last = -1;
@@ -294,8 +324,9 @@ var EnjoyedBy = (function () {
                 }
             }
             this.itemCell(i, -1).innerHTML = this.select_html;
-            s = this.itemCell(i, -1).firstChild;
-            s.selectedIndex = last;
+            paidby_select = this.itemCell(i, -1).firstChild;
+            paidby_select.selectedIndex = last;
+            this.set_change_handler(paidby_select);
         }
     };
     EnjoyedBy.prototype.changed_element = function (e, names_changed) {
@@ -305,6 +336,45 @@ var EnjoyedBy = (function () {
         if(names_changed) {
             this.update_name_selectors();
         }
+        this.update_all();
+    };
+    EnjoyedBy.prototype.propClick = // Click on a proportion selector
+    function (e) {
+        var _this = this;
+        var he = e.target;
+        if(he.tagName == 'INPUT') {
+            if((he).type == 'text') {
+                return;
+            }
+        }
+        var td = findSelfOrParent(he, 'TD');
+        var rect = td.getBoundingClientRect();
+        var nodeList = this.dropdown_menu.getElementsByTagName("a");
+        for(var i = 0; i < nodeList.length; ++i) {
+            (nodeList[i]).onclick = function (e) {
+                return _this.propPopupClick(e, td);
+            };
+        }
+        this.dropdown_menu.style.display = 'block';
+        this.dropdown_menu.style.left = "" + (rect.left - 2) + "px"// 2 is borderwidth of dropdown - that of td
+        ;
+        this.dropdown_menu.style.top = "" + (rect.top - 2) + "px";
+        this.dropdown_menu.onclick = function (e) {
+            return _this.propPopupClick(e, td);
+        };
+    };
+    EnjoyedBy.prototype.propPopupClick = function (e, target_td) {
+        var he = e.target;
+        var td = findSelfOrParent(he, 'TD');
+        if(td != null) {
+            var nodeList = td.getElementsByTagName('INPUT');
+            assert(nodeList.length == 1);
+            var input = nodeList[0];
+            assert(input.tagName == 'INPUT');
+            target_td.innerHTML = input.outerHTML;
+        }
+        // Hide popup
+        this.dropdown_hide();
         this.update_all();
     };
     EnjoyedBy.prototype.clear_timeouts = function () {
@@ -347,7 +417,6 @@ var EnjoyedBy = (function () {
         };
     };
     EnjoyedBy.prototype.add_person = function () {
-        var _this = this;
         // And add a column to the items table.
         var tbl = this.table_expenses;
         var row1 = tblrow(tbl, 1);
@@ -355,17 +424,13 @@ var EnjoyedBy = (function () {
         var val = 'Person' + (old_nPeople + 1);
         // People cells in row 1
         var ie = addcell(row1, '<input class="person-td" type="text" value="' + val + '"/>', old_nPeople + 4);
-        ie.onchange = function (e) {
-            return _this.changed_element(e, true);
-        };
-        // Add column to all item rows
+        this.set_change_handler(ie, true);
+        // Add proportions column to all item rows
         var nItems = this.nItems();
         for(var i = 0; i < nItems; ++i) {
             // Add at second-last column
-            var ie = addcell(this.itemRow(i), '<input class="prop-td" type="text" value="1" />', old_nPeople + 4);
-            ie.onchange = function (e) {
-                return _this.changed_element(e);
-            };
+            var ie = addcell(this.itemRow(i), this.newprop_html, old_nPeople + 4);
+            this.set_proportion_handlers(ie.parentElement);
         }
         // Add column to the total rows
         for(var t = 0; t < 3; ++t) {
@@ -385,7 +450,6 @@ var EnjoyedBy = (function () {
         var cell = (e.target).parentElement;
         var personNumber = cell.cellIndex - 1;// we're on the last row. Person 0 is cell 1
         
-        dlog('deleting person' + personNumber);
         if(this.nPeople() <= 1) {
             warn("Won't delete the last person.  Just change their name?");
             return;
@@ -425,12 +489,13 @@ var EnjoyedBy = (function () {
         var itemNumber = (old_nItems + 1).toString();
         var count = 0;
         this.a(row, "<input class='item-td' placeholder='item" + itemNumber + "'/>");
-        this.a(row, "<input class='amount-td' placeholder='e.g. 1.00'/>").parentElement;
+        this.a(row, "<input class='amount-td' value='0.00'/>");
         this.a(row, "<input class='currency-td' placeholder='e.g. GBP'/>");
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for(var p = 0; p < nPeople; ++p) {
-            this.a(row, "<input class='prop-td' value='1'/>");
+            var ie = this.a(row, this.newprop_html);
+            this.set_proportion_handlers(ie.parentElement);
         }
         var b = addcell(row, '<button id="button_del_item">x</button>');
         this.add_del_handlers(b, false);
