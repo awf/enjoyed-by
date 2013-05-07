@@ -31,6 +31,9 @@
 *.vspscc
 .builds
 *.dotCover
+app.js
+app.js.map
+
 
 ## TODO: If you have NuGet Package Restore enabled, uncomment this
 #packages/

@@ -1,20 +1,13 @@
 
+function assert(x: bool) {
+    if (x) return;
+
+    throw 'assert failed';
+}
+
 function togglevis(e: HTMLElement) {
     e.style.display  = e.style.display != "block" ? "block" : "none";
     dlog('elt[' + e.toString() + '] -> [' + e.style.display + ']');
-}
-
-function ddclick(e: Event) {
-    togglevis(elt('ddul'));
-}
-
-function ddselect(e: Event) {
-    var element = <HTMLElement>e.target;
-    var ul = <HTMLUListElement>findSelfOrParent(element, 'ul');
-    var dl = <HTMLDListElement>findSelfOrParent(element, 'dl');
-    var a = <HTMLAnchorElement>findSelfOrParent(element, 'a');
-    togglevis(ul);
-    (<HTMLAnchorElement>dl.firstElementChild.firstChild).innerHTML = a.innerHTML;
 }
 
 //----
@@ -22,14 +15,14 @@ function ddselect(e: Event) {
 function findSelfOrParent(e: HTMLElement, tag: string) {
     var p = e;
     for (; ;) {
-        if (p.parentElement == p)
-            throw "zoiks";
-
         if (p == null)
             return p;
 
-        if (p.tagName.toLowerCase() == tag)
+        if (p.tagName == tag)
             return p;
+
+        if (p.parentElement == p)
+            throw "zoiks";
 
         p = p.parentElement;
     }
@@ -106,13 +99,19 @@ class EnjoyedBy {
     content: HTMLDivElement;
     //select_element: HTMLSelectElement;
     select_html: string;
+    dropdown_menu: HTMLDivElement;
+    newprop_html: string;
 
     constructor() {
         this.table_expenses = <HTMLTableElement>elt('table_expenses');
         // (<HTMLTableElement>elt('design-time-expenses')).innerHTML = '';
         var button_add_item = elt('button_add_item');
         var button_add_person = elt('button_add_person');
+        this.dropdown_menu = <HTMLDivElement>elt('dropdown_menu');
         this.content = <HTMLDivElement>elt('content');
+        this.newprop_html = elt('newprop-proto').outerHTML;
+
+        this.dropdown_hide();
 
         button_add_item.onclick = () => this.add_item();
         button_add_person.onclick = () => this.add_person();
@@ -130,22 +129,36 @@ class EnjoyedBy {
             this.add_del_handlers(<HTMLButtonElement>tblcell(tbl, tbl.rows.length - 1, c + 1).firstChild, true);
         }
 
-        this.make_select_element();
+        this.make_select_html();
 
+        // Replace dummy input from default.htm with new person selector
         var nItems = this.nItems();
         for (var ii = 0; ii < nItems; ++ii) {
-            // Replace dummy input from default.htm with new person selector
-            this.itemCell(ii, -1).innerHTML = this.select_html;
-            (<HTMLSelectElement>this.itemCell(ii, -1).firstChild).selectedIndex = (ii == 2 ? 1 : 0);  // Make veggie pay for third item 
+            var paidby_cell = this.itemCell(ii, -1);
+            var paidby_select = <HTMLSelectElement>paidby_cell.firstChild
+            paidby_cell.innerHTML = this.select_html;
+            paidby_select.selectedIndex = (ii == 2 ? 1 : 0);  // Make veggie pay for third item 
+
             // Replace event handlers on item rows.
-            for (var c = -4; c < nPeople; ++c) {
-                var ie = <HTMLInputElement>(this.itemCell(ii, c).firstChild);
-                ie.onchange = (e: Event) => this.changed_element(e, c==-1);
-            }
+            for (var c = -4; c < 0; ++c)
+                this.set_change_handler(<HTMLElement>this.itemCell(ii, c).firstChild);
+            
+            for (var c = 0; c < nPeople; ++c)
+                this.set_proportion_handlers(this.itemCell(ii, c));
+
+            // Add handler to delete button on last cell of row
             this.add_del_handlers(<HTMLButtonElement>(this.itemCell(ii, nPeople).firstChild), false);
         }
         
        this.update_all();
+    }
+
+    set_change_handler(he: HTMLElement, will_change_people_names: bool = false) {
+        he.onchange = (e: Event) => this.changed_element(e, will_change_people_names);
+    }
+    set_proportion_handlers(td: HTMLTableCellElement) {
+        td.onclick = (e: MouseEvent) => this.propClick(e);
+        (<HTMLInputElement>td.firstChild).onchange = (e: Event) => this.changed_element(e, false);
     }
 
     nItems() {
@@ -172,7 +185,7 @@ class EnjoyedBy {
         return tblcell(this.table_expenses, 2 + this.nItems() + i, p + 2 /* button + colspan4 header */);
     }
 
-    make_select_element() {
+    make_select_html() {
         var nPeople = this.nPeople();
 
         this.select_html = '<select id="person-select">';
@@ -181,20 +194,30 @@ class EnjoyedBy {
             this.select_html += "<option>" + person + "</option>";
         }
         this.select_html += '</select>';
-
-        //select_element = <HTMLSelectElement>make_element(this.select_html);
     }
+
+    dropdown_hide() {
+        this.dropdown_menu.style.left = "" + 0 + "px";;
+        this.dropdown_menu.style.top = "" + 0 + "px";;
+        this.dropdown_menu.style.display = 'none';
+
+    }
+
+    save_string: string;
 
     update_all() {
         var tbl = this.table_expenses;
         var row1 = tblrow(tbl, 1);
         var nPeople = this.nPeople();
 
+        this.save_string = '';
+
         var people: { [s: string]: number; } = {};
         for (var c = 0; c < nPeople; ++c) {
             var cell = tblcell(tbl, 1, c+4);
             var input = <HTMLInputElement>cell.firstChild;
             people[input.value] = c + 1;
+            this.save_string += "person" + c + "=" + encodeURIComponent(input.value) + '&';
         }
 
         var nItems = this.nItems();
@@ -213,9 +236,11 @@ class EnjoyedBy {
 
             // Item description
             var item: string = (<HTMLInputElement>cel(0).firstChild).value;
+            this.save_string += "item" + item_ind + "=" + encodeURIComponent(item) + '&';
 
             // Set amount to 2 dp
             var amount_ie = <HTMLInputElement>cel(1).firstChild;
+            this.save_string += "amt" + item_ind + "=" + encodeURIComponent(amount_ie.value) + '&';
             var amount = 0;
             if (amount_ie.value != '') {
                 var amount: number = parseFloat(amount_ie.value);
@@ -231,6 +256,7 @@ class EnjoyedBy {
 
             // Currency
             var cur: string = (<HTMLInputElement>cel(2).firstChild).value;
+            this.save_string += "cur" + item_ind + "=" + encodeURIComponent(cur) + '&';
             currencies[item_ind] = cur;
 
             // Validate payer
@@ -243,11 +269,13 @@ class EnjoyedBy {
                 payer_ie.className = 'person-select';
                 payers[item_ind] = pid;
             }
+            this.save_string += "payer" + item_ind + "=" + encodeURIComponent(payer_ie.value) + '&';
 
             // Fix proportions
             for (var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = <HTMLInputElement>prop_cell.firstChild;
+                this.save_string += "prop" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
                 var prop = parseFloat(prop_ie.value);
                 if (prop >= 0) { // note must fail for nan
                     prop_cell.className = 'prop-td';
@@ -258,6 +286,9 @@ class EnjoyedBy {
                     all_valid = false;
                 }
             }
+            this.save_string += 'd=1';
+
+            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">Save</a>'; 
         }
 
         if (!all_valid) {
@@ -290,8 +321,8 @@ class EnjoyedBy {
             for (var p = 0; p < nPeople; ++p) {
                 var prop = proportions[i][p] / propsum;
                 total_enjoyed[p] += amount * prop;
-                (<HTMLInputElement>this.itemCell(i, p).firstChild).title = 'Enjoyed: ' + (amount*prop).toFixed(2) + ' ' + currencies[i];
-                (<HTMLInputElement>this.itemCell(i, p).firstChild).onmouseover = (e) => msg((<HTMLInputElement>e.target).title);
+                //(<HTMLInputElement>this.itemCell(i, p).firstChild).title = 'Enjoyed: ' + (amount*prop).toFixed(2) + ' ' + currencies[i];
+                //(<HTMLInputElement>this.itemCell(i, p).firstChild).onmouseover = (e) => msg((<HTMLInputElement>e.target).title);
             }
         }
 
@@ -314,19 +345,20 @@ class EnjoyedBy {
     }
 
     update_name_selectors(deletedPerson: number = -1) {
-        this.make_select_element();
+        this.make_select_html();
         var nItems = this.nItems();
         for (var i = 0; i < nItems; ++i) {
-            var s = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
-            var last = s.selectedIndex;
+            var paidby_select = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
+            var last = paidby_select.selectedIndex;
             if (deletedPerson != -1)
                 if (last == deletedPerson)
                     last = -1;
                 else if (last > deletedPerson)
                     last -= 1;
             this.itemCell(i, -1).innerHTML = this.select_html;
-            s = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
-            s.selectedIndex = last;
+            paidby_select = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
+            paidby_select.selectedIndex = last;
+            this.set_change_handler(paidby_select);
         }
     }
 
@@ -339,6 +371,45 @@ class EnjoyedBy {
         this.update_all();
     }
 
+    // Click on a proportion selector
+    propClick(e: MouseEvent) {
+        var he = <HTMLElement>e.target;
+        if (he.tagName == 'INPUT')
+            if ((<HTMLInputElement>he).type == 'text')
+            return;
+        
+        var td = <HTMLTableCellElement>findSelfOrParent(he, 'TD');
+
+        var rect = td.getBoundingClientRect();
+
+        var nodeList = this.dropdown_menu.getElementsByTagName("a");
+        for (var i = 0; i < nodeList.length; ++i)
+            (<HTMLElement>nodeList[i]).onclick = (e: MouseEvent) => this.propPopupClick(e, td);
+
+        this.dropdown_menu.style.display = 'block';
+        this.dropdown_menu.style.left = "" + (rect.left-2) + "px"; // 2 is borderwidth of dropdown - that of td
+        this.dropdown_menu.style.top = "" + (rect.top-2) + "px";
+        this.dropdown_menu.onclick = (e: MouseEvent) => this.propPopupClick(e, td);
+    }
+
+    propPopupClick(e: MouseEvent, target_td: HTMLTableCellElement) {
+        var he = <HTMLElement>e.target;
+        var td = <HTMLTableCellElement>findSelfOrParent(he, 'TD');
+        if (td != null) {
+            var nodeList = td.getElementsByTagName('INPUT');
+            assert(nodeList.length == 1);
+
+            var input = <HTMLInputElement>nodeList[0];
+
+            assert(input.tagName == 'INPUT');
+
+            target_td.innerHTML = input.outerHTML;
+        }
+
+        // Hide popup
+        this.dropdown_hide();
+        this.update_all();
+    }
 
     onclick_timeout: number[] = new Array();
     clear_timeouts() {
@@ -387,14 +458,14 @@ class EnjoyedBy {
 
         // People cells in row 1
         var ie = <HTMLInputElement>addcell(row1, '<input class="person-td" type="text" value="' + val + '"/>', old_nPeople + 4);
-        ie.onchange = (e: Event) => this.changed_element(e, true);
+        this.set_change_handler(ie, true);
 
-        // Add column to all item rows
+        // Add proportions column to all item rows
         var nItems = this.nItems();
         for (var i = 0; i < nItems; ++i) {
             // Add at second-last column
-            var ie = <HTMLInputElement>addcell(this.itemRow(i), '<input class="prop-td" type="text" value="1" />', old_nPeople + 4);
-            ie.onchange = (e: Event) => this.changed_element(e);
+            var ie = <HTMLInputElement>addcell(this.itemRow(i), this.newprop_html, old_nPeople + 4);
+            this.set_proportion_handlers(<HTMLTableCellElement>ie.parentElement);
         }
 
         // Add column to the total rows
@@ -418,7 +489,6 @@ class EnjoyedBy {
 
         var cell = <HTMLTableCellElement>(<HTMLElement>e.target).parentElement
         var personNumber = cell.cellIndex - 1; // we're on the last row. Person 0 is cell 1
-        dlog('deleting person' + personNumber);
         if (this.nPeople() <= 1) {
             warn("Won't delete the last person.  Just change their name?");
             return;
@@ -459,12 +529,13 @@ class EnjoyedBy {
         var count = 0;
 
         this.a(row, "<input class='item-td' placeholder='item" + itemNumber + "'/>");
-        this.a(row, "<input class='amount-td' placeholder='e.g. 1.00'/>").parentElement;
+        this.a(row, "<input class='amount-td' value='0.00'/>");
         this.a(row, "<input class='currency-td' placeholder='e.g. GBP'/>");
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for (var p = 0; p < nPeople; ++p) {
-            this.a(row, "<input class='prop-td' value='1'/>");
+            var ie = this.a(row, this.newprop_html);
+            this.set_proportion_handlers(<HTMLTableCellElement>ie.parentElement);
         }
         var b = addcell(row, '<button id="button_del_item">x</button>');
         this.add_del_handlers(<HTMLButtonElement>b, false);

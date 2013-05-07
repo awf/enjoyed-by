@@ -8,73 +8,10 @@
     <script src="app.js"></script>
     <style type="text/css" >
 
-        .message-div {
-            background-color: lightgray;
-        }
-        .message-div-active-1 {
-            background-color: palegreen;
-        }
-        .message-div-active-2 {
-            background-color: green;
-        }
-        .tbl-expenses {
-            background-color: aliceblue;
-            border: 0px;
-        }
-        .x1-button {
-            border-style: groove; 
-            border-width: 3px; 
-            margin:0 0 0 0;
-            height: 32px;
-            width: 32px;
-            background-image: url("images/x-button.png");
-        }
-        .item-td {
-            min-width: 5em;
-            width:20em;
-        }
-        .amount-td, .amount-td-inval  {
-            width: 3em;
-            text-align: right;
-        }
-        .currency-td {
-            width: 40px;
-        }
-        .person-td, .person-td-inval  {
-            width: 4.5em;
-        }
-        .prop-td, .prop-td-inval {
-            width: 2em;
-            text-align: right;
-        }
-        .tot-td, .tot-td-inval  {
-            width: 3em;
-            text-align: right;
-            align-content: flex-end;
-        }
-        .amount-td-inval, .person-td-inval, .prop-td-inval, .tot-td-inval {
-            background-color: palevioletred;
-        }
     </style>
 </head>
 <body>
-                 <dl id="dropdown_dl" class="dropdown">
-                    <dt><a href="#" onclick="javascript:ddclick(event);"><img height="16" src="images/cc-tick.png" /></a></dt>
-                    <dd>
-                        <ul id="ddul">
-                            <li><a href="#" onclick="javascript:ddselect(event);">
-                                <img height="16" src="images/cc-tick.png" />
-                            </a></li>
-                            <li><a href="#" onclick="javascript:ddselect(event);">
-                                <img height="16" src="images/cc-x.png" />
-                            </a></li>
-                            <li><a href="#" onclick="javascript:ddselect(event);">
-                                <input style="height: 16px;" type="text" value="0.5" class="prop-td" title="Part-share (0 to 1)"/>
-                            </a></li>
-                        </ul>
-                    </dd>
-                </dl>
-
+    <!-- <button >Save</button>   here to stop add_person being the target of "Enter" key presses... -->              
     <div id="expenses">
         <table id="table_expenses" class="tbl-expenses">
             <thead>
@@ -95,28 +32,18 @@
                     <td><input class="person-td" type="text" value="Andrew" /></td>
                     <td><input class="person-td" type="text" value="Veggie" /></td>
                     <td><input class="person-td" type="text" value="Pioneer" /></td>
-                    <td><button id="button_add_person" title="Add person">+</button></td>
+                    <td><button tabindex="2" id="button_add_person" title="Add person" >+</button></td>
                   </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><input class="item-td" type="text" value="Salt" /></td>
-                    <td><input class="amount-td" type="text" value="6" /></td>
-                    <td><input class="currency-td" type="text" value="GBP" /></td>
-                    <td><input class="person-td-inval" type="text" value="Andrew" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><button id="button_del_item">x</button></td>
-                </tr>
                 <tr>
                     <td><input class="item-td" type="text" value="Beef" /></td>
                     <td><input class="amount-td-inval" type="text" value="10" /></td>
                     <td><input class="currency-td" type="text" value="GBP" /></td>
                     <td><input class="person-dd" type="text" value="Andrew" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><input class="prop-td" type="text" value="0" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
+                    <td class="prop-td"><input type="image" value="0" src="images/cc-x.png" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
                     <td><button id="button2">x</button></td>
                 </tr>
                 <tr>
@@ -124,15 +51,25 @@
                     <td><input class="amount-td" type="text" value="14" /></td>
                     <td><input class="currency-td" type="text" value="GBP" /></td>
                     <td><input class="person-td" type="text" value="Veggie" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><input class="prop-td" type="text" value="1" /></td>
-                    <td><input class="prop-td" type="text" value="0" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
+                    <td class="prop-td"><input type="image" value="0" src="images/cc-x.png" /></td>
                     <td><button id="button3">x</button></td>
+                </tr>
+                <tr>
+                    <td><input class="item-td" type="text" value="Nuts" /></td>
+                    <td><input class="amount-td" type="text" value="6" /></td>
+                    <td><input class="currency-td" type="text" value="GBP" /></td>
+                    <td><input class="person-td-inval" type="text" value="Andrew" /></td>
+                    <td class="prop-td"><input type="text" value="0.5" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
+                    <td class="prop-td"><input type="image" value="1" src="images/cc-tick.png" /></td>
+                    <td><button id="button_del_item">x</button></td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
-                    <td><button id="button_add_item">Add Item</button></td>
+                    <td><button tabindex="1" id="button_add_item">Add Item</button></td>
                     <td colspan="3" style="text-align: right; font-weight: bold">Total Enjoyed:</td>
                     <td class="tot-td">**</td>
                     <td class="tot-td-inval">**</td>
@@ -164,6 +101,40 @@
     <div id="log">
 
     </div>
-    
+    <div id="save_link">
+
+    </div>
+    <div id="dropdown_menu" class="dropdown">
+        <table id="ddul">
+            <tr>
+                <td>
+                    <a href="#">
+                        <div>
+                            <input id='newprop-proto' type="image" value="1" src="images/cc-tick.png" />
+                        </div>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="#">
+                        <div>
+                            <input type="image" value="0" src="images/cc-x.png" />
+                        </div>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="#">
+                        <div>
+                            <input type="text" value="0.5" />
+                        </div>
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </div>
+
 </body>
 </html>

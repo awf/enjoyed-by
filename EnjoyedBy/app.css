@@ -1,13 +1,135 @@
-﻿body
-{
-    font-family: 'Segoe UI', sans-serif
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
 }
 
 span {
-    font-style: italic
+    font-style: italic;
 }
 
-/* from http://www.jankoatwarpspeed.com/wp-content/uploads/examples/reinventing-drop-down/Select2DropDown.html */
+.message-div {
+    background-color: lightgray;
+}
+
+.message-div-active-1 {
+    background-color: palegreen;
+}
+
+.message-div-active-2 {
+    background-color: green;
+}
+
+.tbl-expenses {
+    background-color: aliceblue;
+    border: 0px;
+}
+
+.x1-button {
+    border-style: groove;
+    border-width: 3px;
+    margin: 0 0 0 0;
+    height: 32px;
+    width: 32px;
+    background-image: url("images/x-button.png");
+}
+
+.item-td {
+    min-width: 5em;
+    width: 20em;
+}
+
+.amount-td, .amount-td-inval {
+    width: 3em;
+    text-align: right;
+}
+
+.currency-td {
+    width: 40px;
+}
+
+.person-td, .person-td-inval {
+    width: 4.5em;
+}
+
+.prop-td, .prop-td-inval {
+    width: 2em;
+    /*text-align: right;*/
+    align-content: flex-end;
+}
+
+.tot-td, .tot-td-inval {
+    width: 3em;
+    text-align: right;
+    align-content: flex-end;
+}
+
+.amount-td-inval, .person-td-inval, .prop-td-inval, .tot-td-inval {
+    background-color: palevioletred;
+}
+
+.dropdown {
+    background: #e4dfcb no-repeat scroll right top;
+}
+
+.prop-td, #dropdown_menu {
+    background: #e4dfcb url(images/down-arrow.png) no-repeat scroll right top;
+    width: 3em;
+    border: 1px;
+    padding: 5px;
+    padding-right: .85em; /* width of down-arrow */
+    border: 1px solid #d4ca9a;
+    text-align: right;
+}
+
+#dropdown_menu {
+    /*display: none; -- set this in code, so we can see it in the designer*/
+    position: absolute;
+    left: 10px;
+    top: 322px;
+    border: 3px solid #406020;
+    border-style: groove;
+}
+
+.prop-td {
+}
+
+.prop-td input[type=image], .dropdown input[type=image] {
+    background: white;
+    border: 0px;
+    height: 16px;
+    width: 16px;
+    align-self: flex-end;
+}
+
+.prop-td input[type=text] {
+    background: white;
+    width: 2em;
+    align-self: flex-end;
+}
+
+
+.dropdown td {
+    padding: 0px;
+    border: 1px;
+    color: #C5C0B0;
+}
+.dropdown a div {
+    padding: 1px 5px 0px 5px;
+    color: #816c5b;
+}
+.dropdown a, .dropdown a:visited {
+    text-decoration: none;
+    outline: none;
+}
+.dropdown input {
+    width: 2.3em;
+    height: 16px;
+}
+.dropdown a:hover div { 
+    background-color:#d0c9af;
+}
+
+
+/* from http://www.jankoatwarpspeed.com/wp-content/uploads/examples/reinventing-drop-down/Select2DropDown.html
 .dropdown dd, .dropdown dt, .dropdown ul { margin:0px; padding:0px; }
 .dropdown dd { position:relative; }
 .dropdown a, .dropdown a:visited { 
@@ -19,13 +141,7 @@ span {
                 border:1px solid #d4ca9a; 
                 width:3em; padding:5px;}
 .dropdown dt a span {cursor:pointer; display:block;}
-.dropdown dd ul { background:#e4dfcb none repeat scroll 0 0; 
-                  border:1px solid #d4ca9a; 
-                  color:#C5C0B0; display:none;
-                  left:0px; padding:5px 0px; 
-                  position:absolute; 
-                  top:2px; width:auto; min-width:3em; list-style:none;}
 .dropdown span.value { display: none ;}
 .xdropdown dd ul li a { padding:5px; display:block;}
 .dropdown dd ul li a:hover { background-color:#d0c9af;}
-/* end from */
+ end from */
