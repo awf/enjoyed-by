@@ -1,3 +1,18 @@
+function getOffsetRect(elem) {
+    var box = elem.getBoundingClientRect();
+    var body = document.body;
+    var docElem = document.documentElement;
+    var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+    var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+    var clientTop = docElem.clientTop || body.clientTop || 0;
+    var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+    var top = box.top + scrollTop - clientTop;
+    var left = box.left + scrollLeft - clientLeft;
+    return {
+        top: Math.round(top),
+        left: Math.round(left)
+    };
+}
 function assert(x) {
     if(x) {
         return;
@@ -143,7 +158,10 @@ var EnjoyedBy = (function () {
                 (this.itemCell(i, -1).firstChild).selectedIndex = people2id[params['payer' + i]];
                 for(var c = 0; c < nPeople; ++c) {
                     var td = this.itemCell(i, c);
-                    var propval = params['prop' + i + '_' + c];
+                    var propval = params['p' + i + '_' + c];
+                    if(propval == undefined) {
+                        propval = params['prop' + i + '_' + c];
+                    }
                     if(propval == 1) {
                         td.innerHTML = this.newprop_1_html;
                     } else if(propval == 0) {
@@ -205,8 +223,6 @@ var EnjoyedBy = (function () {
         this.select_html += '</select>';
     };
     EnjoyedBy.prototype.dropdown_hide = function () {
-        this.dropdown_menu.style.left = "" + 0 + "px";
-        this.dropdown_menu.style.top = "" + 0 + "px";
         this.dropdown_menu.style.display = 'none';
     };
     EnjoyedBy.prototype.update_all = function () {
@@ -268,7 +284,7 @@ var EnjoyedBy = (function () {
             for(var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = prop_cell.firstChild;
-                this.save_string += "prop" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
+                this.save_string += "p" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
                 var prop = parseFloat(prop_ie.value);
                 if(prop >= 0) {
                     prop_cell.className = 'prop-td';
@@ -278,9 +294,10 @@ var EnjoyedBy = (function () {
                     all_valid = false;
                 }
             }
-            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">permalink</a>';
         }
         this.save_string += 'done=1';
+        var url = document.URL.split('?')[0] + '?' + this.save_string;
+        (elt('save_link')).href = url;
         if(!all_valid) {
             warn('Invalid fields: Totals not computed');
             for(var t = 0; t < 3; ++t) {
@@ -291,7 +308,6 @@ var EnjoyedBy = (function () {
             }
             return;
         }
-        elt('content').innerHTML = '';
         var total_enjoyed = new Array(nPeople);
         var total_paid = new Array(nPeople);
         for(var p = 0; p < nPeople; ++p) {
@@ -363,7 +379,7 @@ var EnjoyedBy = (function () {
             }
         }
         var td = findSelfOrParent(he, 'TD');
-        var rect = td.getBoundingClientRect();
+        var rect = getOffsetRect(td);
         var nodeList = this.dropdown_menu.getElementsByTagName("a");
         for(var i = 0; i < nodeList.length; ++i) {
             (nodeList[i]).onclick = function (e) {
@@ -371,13 +387,15 @@ var EnjoyedBy = (function () {
             };
         }
         this.dropdown_menu.style.display = 'block';
-        this.dropdown_menu.style.left = "" + (rect.left - 2) + "px";
-        this.dropdown_menu.style.top = "" + (rect.top - 2) + "px";
+        this.dropdown_menu.style.left = "" + (rect.left - 1) + "px";
+        this.dropdown_menu.style.top = "" + (rect.top - 1) + "px";
+        this.dropdown_menu.style.width = td.style.width;
         this.dropdown_menu.onclick = function (e) {
             return _this.propPopupClick(e, td);
         };
     };
     EnjoyedBy.prototype.propPopupClick = function (e, target_td) {
+        this.dropdown_hide();
         var he = e.target;
         var td = findSelfOrParent(he, 'TD');
         if(td != null) {
@@ -386,8 +404,8 @@ var EnjoyedBy = (function () {
             var input = nodeList[0];
             assert(input.tagName == 'INPUT');
             target_td.innerHTML = input.outerHTML;
+            input.focus();
         }
-        this.dropdown_hide();
         this.update_all();
     };
     EnjoyedBy.prototype.clear_timeouts = function () {

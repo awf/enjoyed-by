@@ -1,3 +1,24 @@
+function getOffsetRect(elem) {
+    // (1)
+    var box = elem.getBoundingClientRect()
+
+    var body = document.body
+    var docElem = document.documentElement
+
+    // (2)
+    var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop
+    var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft
+
+    // (3)
+    var clientTop = docElem.clientTop || body.clientTop || 0
+    var clientLeft = docElem.clientLeft || body.clientLeft || 0
+
+    // (4)
+    var top = box.top + scrollTop - clientTop
+    var left = box.left + scrollLeft - clientLeft
+
+    return { top: Math.round(top), left: Math.round(left) }
+}
 
 function assert(x: bool) {
     if (x) return;
@@ -179,7 +200,9 @@ class EnjoyedBy {
                 (<HTMLSelectElement>this.itemCell(i, -1).firstChild).selectedIndex = people2id[params['payer' + i]];
                 for (var c = 0; c < nPeople; ++c) {
                     var td = this.itemCell(i, c);
-                    var propval = params['prop' + i + '_' + c];
+                    var propval = params['p' + i + '_' + c]; 
+                    if (propval == undefined) // awf fixme remove this in due course (when Valdez folk pay)
+                        propval = params['prop' + i + '_' + c];
                     if (propval == 1)
                         td.innerHTML = this.newprop_1_html;
                     else if (propval == 0)
@@ -244,9 +267,9 @@ class EnjoyedBy {
     }
 
     dropdown_hide() {
-        this.dropdown_menu.style.left = "" + 0 + "px";
-        this.dropdown_menu.style.top = "" + 0 + "px";
         this.dropdown_menu.style.display = 'none';
+        //this.dropdown_menu.style.left = "" + 0 + "px";
+        //this.dropdown_menu.style.top = "" + 0 + "px";
     }
 
     save_string: string;
@@ -324,7 +347,7 @@ class EnjoyedBy {
             for (var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = <HTMLInputElement>prop_cell.firstChild;
-                this.save_string += "prop" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
+                this.save_string += "p" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
                 var prop = parseFloat(prop_ie.value);
                 if (prop >= 0) { // note must fail for nan
                     prop_cell.className = 'prop-td';
@@ -335,10 +358,12 @@ class EnjoyedBy {
                     all_valid = false;
                 }
             }
-
-            elt('save_link').innerHTML = '<a href="' + document.URL.split('?')[0] + '?' + this.save_string + '">permalink</a>'; 
         }
         this.save_string += 'done=1';
+
+        var url = document.URL.split('?')[0] + '?' + this.save_string;
+        (<HTMLAnchorElement>elt('save_link')).href = url;
+        // document.location.search = this.save_string;
 
         if (!all_valid) {
             warn('Invalid fields: Totals not computed');
@@ -351,7 +376,6 @@ class EnjoyedBy {
         }
 
         // all valid.  First set style on total cells, then compute...
-        elt('content').innerHTML = '';
 
         var total_enjoyed: number[] = new Array(nPeople);
         var total_paid: number[] = new Array(nPeople);
@@ -429,19 +453,24 @@ class EnjoyedBy {
         
         var td = <HTMLTableCellElement>findSelfOrParent(he, 'TD');
 
-        var rect = td.getBoundingClientRect();
+        var rect = getOffsetRect(td);
 
         var nodeList = this.dropdown_menu.getElementsByTagName("a");
         for (var i = 0; i < nodeList.length; ++i)
             (<HTMLElement>nodeList[i]).onclick = (e: MouseEvent) => this.propPopupClick(e, td);
 
         this.dropdown_menu.style.display = 'block';
-        this.dropdown_menu.style.left = "" + (rect.left-2) + "px"; // 2 is borderwidth of dropdown - that of td
-        this.dropdown_menu.style.top = "" + (rect.top-2) + "px";
+        this.dropdown_menu.style.left = "" + (rect.left - 1) + "px"; // 1 is borderwidth of dropdown - that of td
+        this.dropdown_menu.style.top = "" + (rect.top - 1) + "px";
+        this.dropdown_menu.style.width = td.style.width;
         this.dropdown_menu.onclick = (e: MouseEvent) => this.propPopupClick(e, td);
     }
 
     propPopupClick(e: MouseEvent, target_td: HTMLTableCellElement) {
+        // Hide popup
+        this.dropdown_hide();
+
+        // Copy element
         var he = <HTMLElement>e.target;
         var td = <HTMLTableCellElement>findSelfOrParent(he, 'TD');
         if (td != null) {
@@ -453,10 +482,10 @@ class EnjoyedBy {
             assert(input.tagName == 'INPUT');
 
             target_td.innerHTML = input.outerHTML;
+
+            input.focus(); // trying to avoid resetting document scroll....
         }
 
-        // Hide popup
-        this.dropdown_hide();
         this.update_all();
     }
 

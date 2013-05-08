@@ -78,10 +78,10 @@
 
 .prop-td, #dropdown_menu {
     background: #e4dfcb url(images/down-arrow.png) no-repeat scroll right top;
-    width: 3em;
+    width: 3.5em;
     border: 1px;
     padding: 5px;
-    padding-right: .85em; /* width of down-arrow */
+    padding-right: 20px; /* width of down-arrow */
     border: 1px solid #d4ca9a;
     text-align: right;
 }
@@ -89,23 +89,17 @@
 #dropdown_menu {
     /*display: none; -- set this in code, so we can see it in the designer*/
     position: absolute;
-    left: 10px;
-    top: 322px;
-    border: 3px solid #406020;
-    border-style: groove;
-}
-
-.prop-td {
+    border: 2px solid #406020;
 }
 
 .prop-td input[type=image], .dropdown input[type=image] {
-    border: 0px;
+    border: 6px;
     height: 16px;
     width: 16px;
     align-self: flex-end;
 }
 
-.prop-td input[type=text] {
+.prop-td input[type=text], .dropdown input[type=text]  {
     background: white;
     width: 2em;
     align-self: flex-end;
