@@ -62,11 +62,13 @@
             At the moment, I don't make any automated proposals as to who should pay whom, 
             so you'll have to chat amongst yourselves.</li>
         <li>
-            To save your page, just follow this <span id="save_link">permalink</span>.
-            You can email the permalink to your friends (right-click it) to show them your work.  
+            To save your work, follow this <span id="save_link"><a href="#">permalink</a></span>, and then bookmark the page.
+            You can email the link to your friends (right-click it) to show them your work.  
             Here's one I saved earlier: <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&">holiday</a> 
             (or see the more complex example, with a fussy eater, <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&">here</a>).
-
+</li>
+            <li>You can include cash payments just as easily: see how the fuss is resolved <a href="http://awf.fitzgibbon.ie/enjoyed-by/index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&item5=Linda%20lent%20Fr%20M%20%C2%A350&amt5=50.00&cur5=&payer5=Ms%20McCartney&prop5_0=0&prop5_1=0&prop5_2=1&item6=Jez%20paid%20Linda%20her%20balance&amt6=11.06&cur6=&payer6=Mr%20Clarkson&prop6_0=0&prop6_1=1&prop6_2=0&">here</a>.</li>
+         <li>
             Nothing you enter here is saved on any other server (or indeed sent anywhere, or stored as a cookie anywhere).</li>
         <li>
             Currencies don't do anything yet -- you can just leave them blank.</li>
@@ -79,7 +81,8 @@
     </div>
 
     <!-- The floating "dropdown" menu for the proportion cells -->
-    <div id="dropdown_menu" class="dropdown" style="top:30px; left:23em;"> <!-- setting top just to see it in designer -->
+    <div id="dropdown_menu" class="dropdown" 
+        style="top:30px; left:23em;">  <!-- setting position just to see it in designer -->
         <table id="ddul">
             <tr><td><a href="#"><div>
                 <input id='newprop-proto-1' type="image" value="1" src="images/32px-tick.png" />
@@ -93,7 +96,8 @@
         </table>
     </div>
 
-    <!-- div just to see effects of styles in designer-->
+    <!-- div just to see effects of styles in designer
+      [remove spc before > on this line to view]  -- > 
     <div id="test">
         <table>
       <tr>
@@ -139,6 +143,6 @@
   </tr>
   </table>
     </div>
-
+    <!-- -->
 </body>
 </html>

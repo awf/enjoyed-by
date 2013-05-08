@@ -287,10 +287,13 @@ class EnjoyedBy {
             // Set amount to 2 dp
             var amount_ie = <HTMLInputElement>cel(1).firstChild;
             this.save_string += "amt" + item_ind + "=" + encodeURIComponent(amount_ie.value) + '&';
-            var amount = 0;
+            var amount = -1;
             if (amount_ie.value != '') {
-                var amount: number = parseFloat(amount_ie.value);
+                amount = parseFloat(amount_ie.value);
+            } else {
+                amount = 0;  // this special case is OK...
             }
+
             if (amount >= 0) {
                 amount_ie.className = 'amount-td';
                 amounts[item_ind] = amount;
@@ -575,8 +578,8 @@ class EnjoyedBy {
         var count = 0;
 
         this.a(row, "<input class='item-td' placeholder='item" + itemNumber + "'/>");
-        this.a(row, "<input class='amount-td' value='0.00'/>");
-        this.a(row, "<input class='currency-td' placeholder='e.g. GBP'/>");
+        this.a(row, "<input class='amount-td' placeholder='0.00'/>");
+        this.a(row, "<input class='currency-td' placeholder='ECU'/>");
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for (var p = 0; p < nPeople; ++p) {
@@ -600,6 +603,7 @@ class EnjoyedBy {
 }
 
 window.onload = () => {
-    elt('test').innerHTML = '';
+    var test = elt('test');
+    if (test) { test.innerHTML = ''; }
     var eb = new EnjoyedBy();
 };

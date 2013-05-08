@@ -238,9 +238,11 @@ var EnjoyedBy = (function () {
             this.save_string += "item" + item_ind + "=" + encodeURIComponent(item) + '&';
             var amount_ie = cel(1).firstChild;
             this.save_string += "amt" + item_ind + "=" + encodeURIComponent(amount_ie.value) + '&';
-            var amount = 0;
+            var amount = -1;
             if(amount_ie.value != '') {
-                var amount = parseFloat(amount_ie.value);
+                amount = parseFloat(amount_ie.value);
+            } else {
+                amount = 0;
             }
             if(amount >= 0) {
                 amount_ie.className = 'amount-td';
@@ -483,8 +485,8 @@ var EnjoyedBy = (function () {
         var itemNumber = (old_nItems + 1).toString();
         var count = 0;
         this.a(row, "<input class='item-td' placeholder='item" + itemNumber + "'/>");
-        this.a(row, "<input class='amount-td' value='0.00'/>");
-        this.a(row, "<input class='currency-td' placeholder='e.g. GBP'/>");
+        this.a(row, "<input class='amount-td' placeholder='0.00'/>");
+        this.a(row, "<input class='currency-td' placeholder='ECU'/>");
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for(var p = 0; p < nPeople; ++p) {
@@ -505,6 +507,9 @@ var EnjoyedBy = (function () {
     return EnjoyedBy;
 })();
 window.onload = function () {
-    elt('test').innerHTML = '';
+    var test = elt('test');
+    if(test) {
+        test.innerHTML = '';
+    }
     var eb = new EnjoyedBy();
 };
