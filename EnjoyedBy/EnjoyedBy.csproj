@@ -22,7 +22,9 @@
     <Content Include="images\cc-tick.png" />
     <Content Include="images\cc-x.png" />
     <Content Include="images\down-arrow.png" />
-    <Content Include="images\text-x-generic.png" />
+    <Content Include="images\image-info.txt" />
+    <Content Include="images\mail-forward.png" />
+    <Content Include="images\push-history.png" />
     <Content Include="index.html" />
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
