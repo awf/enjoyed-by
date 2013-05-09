@@ -17,7 +17,7 @@ function getOffsetRect(elem) {
     var top = box.top + scrollTop - clientTop
     var left = box.left + scrollLeft - clientLeft
 
-    return { top: Math.round(top), left: Math.round(left) }
+    return { top: Math.round(top), left: Math.round(left), width: box.width, height: box.height }
 }
 
 function assert(x: bool) {
@@ -621,6 +621,14 @@ class EnjoyedBy {
         (<HTMLInputElement>this.itemRow(old_nItems).cells[0].firstChild).focus();
 
         this.update_all();
+
+        // save button must be first in the html to accept "enter" (it really seems to be true..)
+        // http://stackoverflow.com/questions/4763638/enter-triggers-button-click
+        // The "type=button" trick works on the other buttons, but not then on the input fields
+        var add_button = elt('button_add_item');
+        var rect = getOffsetRect(add_button);
+        elt('save_button').style.top = "" + (rect.top + rect.height + 3) + "px";
+        elt('save_button').style.left= ""+ rect.left + "px";
     }
 
     del_item(e: MouseEvent) {
