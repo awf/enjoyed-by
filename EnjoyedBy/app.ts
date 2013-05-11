@@ -117,10 +117,22 @@ function addcell(row: HTMLTableRowElement, s: string, loc? = -1): HTMLElement {
     return e;
 }
 
+function button_save_onclick() {
+    warn('Save page to history');
+    elt('save_link').click();
+}
 
-class EnjoyedBy {
+function button_mail_onclick() {
+    var mail = <HTMLAnchorElement>elt('mail_link');
+    var href = (<HTMLAnchorElement>elt('save_link')).href;
+    var project_name = (<HTMLInputElement>elt('project_name')).value;
+    mail.href = "mailto:?subject=EnjoyedBy accounts for " + encodeURIComponent(project_name) + 
+        "&body=Link:%0A%0D" + encodeURIComponent(href);
+    mail.click();
+}
+
+class EnjoyedBy {           
     table_expenses: HTMLTableElement;
-    content: HTMLDivElement;
     //select_element: HTMLSelectElement;
     select_html: string;
     dropdown_menu: HTMLDivElement;
@@ -134,7 +146,7 @@ class EnjoyedBy {
         var button_add_item = elt('button_add_item');
         var button_add_person = elt('button_add_person');
         this.dropdown_menu = <HTMLDivElement>elt('dropdown_menu');
-        this.content = <HTMLDivElement>elt('content');
+    	assert(this.dropdown_menu instanceof HTMLDivElement);
         this.newprop_1_html = elt('newprop-proto-1').outerHTML;
         this.newprop_0_html = elt('newprop-proto-0').outerHTML;
         this.newprop_frac_html = elt('newprop-proto-frac').outerHTML;
@@ -181,23 +193,23 @@ class EnjoyedBy {
             while ((person = params['person' + nPeople]) != undefined) {
                 people2id[person] = nPeople;
                 this.add_person();
-                (<HTMLInputElement>this.itemCell(-1, nPeople).firstChild).value = person;
+                this.inputItemCell(-1, nPeople).value = person;
                 ++nPeople;
             }
 
             this.make_select_html();
 
             // Now add items.  Each is encoded thus:
-            //  'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&prop1_0=1&prop1_1=1&prop1_2=0&' +
+            //  'item1=Wine&amt1=14&cur1=GBP&payer1=Andrew&p1_0=1&p1_1=1&p1_2=0&' +
             var nItems = 0;
             var item;
             while ((item = params['item' + nItems]) != undefined) {
                 var i = nItems++;
                 this.add_item();
-                (<HTMLInputElement>this.itemCell(i, -4).firstChild).value = item;
-                (<HTMLInputElement>this.itemCell(i, -3).firstChild).value = params['amt' + i];
-                (<HTMLInputElement>this.itemCell(i, -2).firstChild).value = params['cur' + i];
-                (<HTMLSelectElement>this.itemCell(i, -1).firstChild).selectedIndex = people2id[params['payer' + i]];
+                this.inputItemCell(i, -4).value = item;
+                this.inputItemCell(i, -3).value = params['amt' + i];
+                this.inputItemCell(i, -2).value = params['cur' + i];
+                this.selectItemCell(i, -1).selectedIndex = people2id[params['payer' + i]];
                 for (var c = 0; c < nPeople; ++c) {
                     var td = this.itemCell(i, c);
                     var propval = params['p' + i + '_' + c]; 
@@ -207,17 +219,33 @@ class EnjoyedBy {
                         td.innerHTML = this.newprop_1_html;
                     else if (propval == 0)
                         td.innerHTML = this.newprop_0_html;
-                    else {
+                    else
                         td.innerHTML = this.newprop_frac_html;
-                        (<HTMLInputElement>td.firstChild).value = propval;
-                    }
+
+		    this.inputItemCell(i, c).value = propval;
                     this.set_proportion_handlers(td);
                 }
             }
         }
 
+
+        // Reparent buttons div.
+        elt('buttons_div').style.position = 'absolute';
+
         this.update_all();
+        this.position_buttons_div();
     }
+
+    position_buttons_div() {
+        // save button must be first in the html to accept "enter" (it really seems to be true..)
+        // http://stackoverflow.com/questions/4763638/enter-triggers-button-click
+        // The "type=button" trick works on the other buttons, but not then on the input fields
+        var rect = getOffsetRect(elt('buttons_div_tl'));
+        var sty = elt('buttons_div').style;
+        sty.top = "" + rect.top + "px";
+        sty.left = "" + rect.left + "px";
+    }
+
 
     set_change_handler(he: HTMLElement, will_change_people_names: bool = false) {
         he.onchange = (e: Event) => this.changed_element(e, will_change_people_names);
@@ -241,6 +269,18 @@ class EnjoyedBy {
 
     itemCell(i: number, person: number) {
         return tblcell(this.table_expenses, 2 + i, 4+person);
+    }
+
+    inputItemCell(i: number, c: number): HTMLInputElement {
+	var el = this.itemCell(i, c).firstChild;
+	assert(el instanceof HTMLInputElement);
+	return <HTMLInputElement>el;
+    }
+
+    selectItemCell(i: number, c: number): HTMLSelectElement {
+	var el = this.itemCell(i, c).firstChild;
+	assert(el instanceof HTMLSelectElement);
+	return <HTMLSelectElement>el;
     }
 
     totRow(i: number) {
@@ -359,10 +399,11 @@ class EnjoyedBy {
                 }
             }
         }
-        this.save_string += 'done=1';
+        // this.save_string += 'done=1';
 
         var url = document.URL.split('?')[0] + '?' + this.save_string;
         (<HTMLAnchorElement>elt('save_link')).href = url;
+        (<HTMLAnchorElement>elt('save_link_2')).href = url;
         // document.location.search = this.save_string;
 
         if (!all_valid) {
@@ -394,8 +435,8 @@ class EnjoyedBy {
             for (var p = 0; p < nPeople; ++p) {
                 var prop = proportions[i][p] / propsum;
                 total_enjoyed[p] += amount * prop;
-                //(<HTMLInputElement>this.itemCell(i, p).firstChild).title = 'Enjoyed: ' + (amount*prop).toFixed(2) + ' ' + currencies[i];
-                //(<HTMLInputElement>this.itemCell(i, p).firstChild).onmouseover = (e) => msg((<HTMLInputElement>e.target).title);
+                //this.inputItemCell(i, p).title = 'Enjoyed: ' + (amount*prop).toFixed(2) + ' ' + currencies[i];
+                //this.inputItemCell(i, p).onmouseover = (e) => msg((<HTMLInputElement>e.target).title);
             }
         }
 
@@ -421,7 +462,7 @@ class EnjoyedBy {
         this.make_select_html();
         var nItems = this.nItems();
         for (var i = 0; i < nItems; ++i) {
-            var paidby_select = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
+            var paidby_select = this.selectItemCell(i, -1);
             var last = paidby_select.selectedIndex;
             if (deletedPerson != -1)
                 if (last == deletedPerson)
@@ -429,7 +470,8 @@ class EnjoyedBy {
                 else if (last > deletedPerson)
                     last -= 1;
             this.itemCell(i, -1).innerHTML = this.select_html;
-            paidby_select = <HTMLSelectElement>this.itemCell(i, -1).firstChild;
+	    // itemCell innerHTML was reassigned, so reassign var
+            paidby_select = this.selectItemCell(i, -1);
             paidby_select.selectedIndex = last;
             this.set_change_handler(paidby_select);
         }
@@ -603,12 +645,13 @@ class EnjoyedBy {
         var tbl = this.table_expenses;
         var old_nItems = this.nItems();
         var row = <HTMLTableRowElement> tbl.insertRow(2 + old_nItems);
+        row.className = 'tbl-itemrow';
         var itemNumber = (old_nItems + 1).toString();
         var count = 0;
 
         this.a(row, "<input class='item-td' placeholder='item" + itemNumber + "'/>");
         this.a(row, "<input class='amount-td' placeholder='0.00'/>");
-        this.a(row, "<input class='currency-td' placeholder='ECU'/>");
+        this.a(row, "<input class='currency-td' placeholder=''/>");
         this.a(row, this.select_html);
         var nPeople = this.nPeople();
         for (var p = 0; p < nPeople; ++p) {
@@ -621,14 +664,7 @@ class EnjoyedBy {
         (<HTMLInputElement>this.itemRow(old_nItems).cells[0].firstChild).focus();
 
         this.update_all();
-
-        // save button must be first in the html to accept "enter" (it really seems to be true..)
-        // http://stackoverflow.com/questions/4763638/enter-triggers-button-click
-        // The "type=button" trick works on the other buttons, but not then on the input fields
-        var add_button = elt('button_add_item');
-        var rect = getOffsetRect(add_button);
-        elt('save_button').style.top = "" + (rect.top + rect.height + 3) + "px";
-        elt('save_button').style.left= ""+ rect.left + "px";
+        this.position_buttons_div();
     }
 
     del_item(e: MouseEvent) {
@@ -636,7 +672,9 @@ class EnjoyedBy {
         var row = <HTMLTableRowElement>((<HTMLButtonElement>e.target).parentElement.parentElement);
         this.table_expenses.deleteRow(row.rowIndex);
         this.update_all();
+        this.position_buttons_div();
     }
+
 }
 
 window.onload = () => {

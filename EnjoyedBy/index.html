@@ -11,34 +11,43 @@
     </style>
 </head>
 <body>
-    <!-- see add_item() for discussion of this hackery -->
-    <div id='save_button' style="position: absolute; top: 134px;">
+    <!-- These buttons actually render below the table ... see add_item() for discussion of this hackery -->
+    <div id='buttons_div' >
         <button type="submit"
             title="This is how you save, see below."
-            onclick="elt('save_link').click()">
+            onclick="button_save_onclick()">
             <img src="images/push-history.png" height="24" />
         </button>
         <button type="submit"
             title="Mail this to your buddies."
-            onclick="elt('mail_link').click()">
+            onclick="button_mail_onclick()">
             <img src="images/mail-forward.png" height="24" />
         </button>
     </div>    
+
+    <!-- Title and event name -->
+    <div style="color: royalblue; padding: 0px 0px 10px 0px; font-weight: bold; font-size: large;">
+      <span style="font-style: italic;">EnjoyedBy</span>: the group expenses arbitrator.
+    </div>
+
+    <div>
+            Event name: <input id="project_name" type="text" value="Our holiday"/>
+    </div>
+
     <input type="hidden" value="$Id$"/>
+    
     <div id="expenses">
         <table id="table_expenses" class="tbl-expenses">
             <thead>
                 <tr>
-                    <td colspan="4">
-                        <div style="color: royalblue; font-size: small;">
-                            <span style="font-style: italic;">EnjoyedBy</span>: the group expenses arbitrator.
-                        </div>
+                    <td class="tbl-head" colspan="4" style="text-align: center">
+                        Items
                     </td>
-                    <td id='eb-td' colspan="3" style="text-align: center">Enjoyed by</td>
+                    <td class="tbl-head" id='eb-td' colspan="3" style="text-align: center">Enjoyed by</td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td>Item</td>
+                    <td>Description</td>
                     <td>Amount</td>
                     <td>Currency</td>
                     <td>Paid by</td>
@@ -53,7 +62,7 @@
                     <td colspan="3" style="text-align: right; font-weight: bold">Total Enjoyed:</td>
                 </tr>
                 <tr>
-                    <td></td>
+                    <td id="buttons_div_tl"></td>
                     <td colspan="3" style="text-align: right; font-weight: bold">Total Paid:</td>
                 </tr>
                 <tr>
@@ -66,40 +75,10 @@
              </tfoot>
         </table>
     </div>
-    <div style="max-width: 50em">
-        <b>Notes:</b>
-        <ul>
-        <li>
-            People with positive totals are owed money by those with negative totals.  
-            At the moment, I don't make any automated proposals as to who should pay whom, 
-            so you'll have to chat amongst yourselves.</li>
-        <li>
-            To save your work, click the "push document into history" button above (which just clicks this <a id="save_link" href="#">link</a>).  
-            Did it look like nothing happened?  Try the back button, then the forward button.  When you're done, follow the link and bookmark the page.
-            You can <a id='mail_link' href="mailto:?subject=Accounts from EnjoyedBy&body=URL">email</a> the link to your friends to show them your work.   
-            Here's one I saved earlier: <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&">holiday</a> 
-            (or see the more complex example, with a fussy eater, <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&">here</a>).
-</li>
-            <li>The Enter key should also effect a push of the save button.</li>
-        <li>
-            Currencies don't do anything yet -- you can just leave them blank.</li>
-        <li>You can include cash payments just by having an X in all but one column.  See how the fussy example was resolved <a href="http://awf.fitzgibbon.ie/enjoyed-by/index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&item5=Linda%20lent%20Fr%20M%20%C2%A350&amt5=50.00&cur5=&payer5=Ms%20McCartney&prop5_0=0&prop5_1=0&prop5_2=1&item6=Jez%20paid%20Linda%20her%20balance&amt6=11.06&cur6=&payer6=Mr%20Clarkson&prop6_0=0&prop6_1=1&prop6_2=0&">here</a>.</li>
-        <li>
-            Nothing you enter here is saved on any other server or stored as a cookie anywhere—it's all in the URL. 
-            Notice you can bitly the link: <a href='http://bit.ly/12UoN6T'>http://bit.ly/12UoN6T</a>.  This means that bitly is storing your state, not me.   (Thanks to Jamie for that mind-bender).
-        </li>
-        <li>
-            The source lives <a href="http://github.com/awf/enjoyed-by">here</a>.</li>
-        <li>Comments to <a href="mailto:enjoyed-by@fitzgibbon.ie?subject=EnjoyedBy comment&body=">enjoyed-by@fitzgibbon.ie</a>.</li>  If you want to be informed of new releases, just send mail to <a href="mailto:enjoyed-by-subscribe@fitzgibbon.ie?subject=Plese keep me in the EnjoyedBy loop&body=">enjoyed-by-subscribe@fitzgibbon.ie</a>.</li>
-        </ul>
-    </div>
-    <div id="log">
-
-    </div>
-
-    <!-- The floating "dropdown" menu for the proportion cells -->
+    <!-- The floating "dropdown" menu for the proportion cells 
+        remove display:none for testing in VS designer -->
     <div id="dropdown_menu" class="dropdown" 
-        style="top:30px; left:23em; ">  <!-- setting position just to see it in designer -->
+        style="top:30px; left:23em; display: none; ">  <!-- setting position just to see it in designer -->
         <table id="ddul">
             <tr><td><a href="#"><div>
                 <input id='newprop-proto-1' type="image" value="1" src="images/32px-tick.png" />
@@ -111,6 +90,44 @@
                 <input id='newprop-proto-frac' type="text" value="0.5" />
             </div></a></td></tr>
         </table>
+    </div>
+
+
+    <div style="max-width: 50em">
+        <b>Notes:</b>
+        <ul>
+            <li>People with positive <strong>totals</strong> are owed money by those with negative totals.  
+            At the moment, I don't make any automated proposals as to who should pay whom, 
+            so you'll have to chat amongst yourselves.</li>
+            <li>To <strong>save</strong> your work, click the "push document into history" button above (<img src="images/push-history.png" style="height:1.8ex"/>),which just clicks this <a id="save_link" href="#">link</a>.  
+                You should also be able to save just by pressing Enter.
+            Did it look like nothing happened?  Try the back button.  Use the forward button to get your work back.  When you're done, follow the link and bookmark the page.
+            </li>
+            <li>You can <a id='mail_link' href="mailto:?subject=Accounts from EnjoyedBy&body=URL">email</a> the link to your friends, either by clicking the mail button above, or by copying the text here:
+                <blockquote>
+                    Hi guys, 
+                    <p>
+                        Here are the <a id="save_link_2" href="#">accounts</a> from EnjoyedBy.
+                    </p>
+                    Your organiser.
+                    </blockquote>
+                </li>
+            <li>
+               Here's a larger <strong>example</strong> saved as a link: <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&">holiday</a>.
+               It is extended to include fussy eaters, <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&">here</a>).
+            </li>
+            <li>You can include cash <strong>payments </strong>just by having an <img src="images/32px-x.png" style="height: 1.4ex"/> in all but one column.  See how the fussy eaters example was resolved <a href="?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&item5=Linda%20lent%20Fr%20M%20%C2%A350&amt5=50.00&cur5=&payer5=Ms%20McCartney&prop5_0=0&prop5_1=0&prop5_2=1&item6=Jez%20paid%20Linda%20her%20balance&amt6=11.06&cur6=&payer6=Mr%20Clarkson&prop6_0=0&prop6_1=1&prop6_2=0&">here</a>.</li>
+            <li><strong>Currencies </strong>don't do anything yet -- you can just leave them blank.</li>
+            <li>Nothing you enter here is saved on any other server or stored as a cookie anywhere—it's all in the URL. 
+            Notice you can bitly the link: <a href='http://bit.ly/12UoN6T'>http://bit.ly/12UoN6T</a>.  This means that bitly is storing your state, not me.   (Thanks to Jamie for that mind-bender).
+            </li>
+            <li>The source lives <a href="http://github.com/awf/enjoyed-by">here</a>.</li>
+            <li>Comments to <a href="mailto:enjoyed-by@fitzgibbon.ie?subject=EnjoyedBy comment&body=">enjoyed-by@fitzgibbon.ie</a>. If you want to be informed of new releases, just send mail to <a href="mailto:enjoyed-by-subscribe@fitzgibbon.ie?subject=Please keep me in the EnjoyedBy loop&body=">enjoyed-by-subscribe@fitzgibbon.ie</a>.</li>
+        </ul>
+    </div>
+
+    <div id="log">
+
     </div>
 
     <!-- div just to see effects of styles in designer
