@@ -570,6 +570,7 @@ class EnjoyedBy {
             else
                 this.del_item(e);
         }
+
     }
 
     add_person() {
