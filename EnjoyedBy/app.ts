@@ -139,6 +139,7 @@ class EnjoyedBy {
     newprop_1_html: string;
     newprop_0_html: string;
     newprop_frac_html: string;
+    project_name: HTMLInputElement;
 
     constructor() {
         this.table_expenses = <HTMLTableElement>elt('table_expenses');
@@ -146,7 +147,8 @@ class EnjoyedBy {
         var button_add_item = elt('button_add_item');
         var button_add_person = elt('button_add_person');
         this.dropdown_menu = <HTMLDivElement>elt('dropdown_menu');
-    	assert(this.dropdown_menu instanceof HTMLDivElement);
+        assert(this.dropdown_menu instanceof HTMLDivElement);
+        this.project_name = <HTMLInputElement>elt('project_name');
         this.newprop_1_html = elt('newprop-proto-1').outerHTML;
         this.newprop_0_html = elt('newprop-proto-0').outerHTML;
         this.newprop_frac_html = elt('newprop-proto-frac').outerHTML;
@@ -156,6 +158,7 @@ class EnjoyedBy {
 
         button_add_item.onclick = () => this.add_item();
         button_add_person.onclick = () => this.add_person();
+        this.project_name.onchange = () => this.update_all();
 
         var url_params = document.location.search;
         if (url_params == '') {
@@ -168,7 +171,6 @@ class EnjoyedBy {
                 'item2=Nuts&amt2=6&cur2=GBP&payer2=Veggie&prop2_0=0.5&prop2_1=1&prop2_2=1&done=1';
             else {
                 // empty page...
-                this.add_person();
                 this.add_person();
                 this.add_person();
                 this.add_item();
@@ -185,6 +187,8 @@ class EnjoyedBy {
             var matches;
             while (matches = re.exec(qs))
                 params[decodeURIComponent(matches[1])] = decodeURIComponent(matches[2]);
+
+            this.project_name.value = params['n'];
 
             // First count people.  Brute force, as huge numbers of people will kill anything else anyway;
             var nPeople = 0;
@@ -319,14 +323,14 @@ class EnjoyedBy {
         var row1 = tblrow(tbl, 1);
         var nPeople = this.nPeople();
 
-        this.save_string = '';
+        this.save_string = 'n=' + encodeURIComponent(this.project_name.value);
 
         var people: { [s: string]: number; } = {};
         for (var c = 0; c < nPeople; ++c) {
             var cell = tblcell(tbl, 1, c+4);
             var input = <HTMLInputElement>cell.firstChild;
             people[input.value] = c + 1;
-            this.save_string += "person" + c + "=" + encodeURIComponent(input.value) + '&';
+            this.save_string += "&person" + c + "=" + encodeURIComponent(input.value);
         }
 
         var nItems = this.nItems();
@@ -345,11 +349,11 @@ class EnjoyedBy {
 
             // Item description
             var item: string = (<HTMLInputElement>cel(0).firstChild).value;
-            this.save_string += "item" + item_ind + "=" + encodeURIComponent(item) + '&';
+            this.save_string += "&item" + item_ind + "=" + encodeURIComponent(item);
 
             // Set amount to 2 dp
             var amount_ie = <HTMLInputElement>cel(1).firstChild;
-            this.save_string += "amt" + item_ind + "=" + encodeURIComponent(amount_ie.value) + '&';
+            this.save_string += "&amt" + item_ind + "=" + encodeURIComponent(amount_ie.value);
             var amount = -1;
             if (amount_ie.value != '') {
                 amount = parseFloat(amount_ie.value);
@@ -368,7 +372,7 @@ class EnjoyedBy {
 
             // Currency
             var cur: string = (<HTMLInputElement>cel(2).firstChild).value;
-            this.save_string += "cur" + item_ind + "=" + encodeURIComponent(cur) + '&';
+            this.save_string += "&cur" + item_ind + "=" + encodeURIComponent(cur);
             currencies[item_ind] = cur;
 
             // Validate payer
@@ -381,13 +385,13 @@ class EnjoyedBy {
                 payer_ie.className = 'payer-select';
                 payers[item_ind] = pid;
             }
-            this.save_string += "payer" + item_ind + "=" + encodeURIComponent(payer_ie.value) + '&';
+            this.save_string += "&payer" + item_ind + "=" + encodeURIComponent(payer_ie.value);
 
             // Fix proportions
             for (var c = 0; c < nPeople; ++c) {
                 var prop_cell = cel(4 + c);
                 var prop_ie = <HTMLInputElement>prop_cell.firstChild;
-                this.save_string += "p" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value) + '&';
+                this.save_string += "&p" + item_ind + "_" + c + "=" + encodeURIComponent(prop_ie.value);
                 var prop = parseFloat(prop_ie.value);
                 if (prop >= 0) { // note must fail for nan
                     prop_cell.className = 'prop-td';
@@ -399,9 +403,8 @@ class EnjoyedBy {
                 }
             }
         }
-        // this.save_string += 'done=1';
 
-        var url = document.URL.split('?')[0] + '?' + this.save_string;
+        var url = '?' + this.save_string;
         (<HTMLAnchorElement>elt('save_link')).href = url;
         (<HTMLAnchorElement>elt('save_link_2')).href = url;
         // document.location.search = this.save_string;
