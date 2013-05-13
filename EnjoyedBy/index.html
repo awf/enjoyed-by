@@ -36,7 +36,7 @@
     <table style="background: aliceblue; border: 2px steelblue ridge ;">
         <tr>
             <td>
-                 Event name: <input id="project_name" type="text" value="Our holiday"/>
+                 Event name: <input id="project_name" type="text" value="Our holiday" />
             </td>
         </tr>
         <tr>
@@ -102,7 +102,7 @@
     </div>
 
 
-    <div style="max-width: 50em">
+    <div id='notes-div' style="max-width: 50em">
         <b>Notes:</b>
         <ul>
             <li>People with positive <strong>totals</strong> are owed money by those with negative totals.  
@@ -117,20 +117,18 @@
                 <blockquote>
                     Hi guys, 
                     <p>
-                        Here are the <a id="save_link_2" href="#">accounts</a> from EnjoyedBy.
+                        Here are the <a id="save_link_2" href="#">accounts</a> for <span id="project_name_2">Our holiday</span> from EnjoyedBy.
                     </p>
                     Your organiser.
                     </blockquote>
                 </li>
             <li>
-                Here&#39;s an <strong>example</strong> saved as a link: <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&">holiday</a>.
-               It is extended to include fussy eaters, <a href="index.html?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&">here</a>).
+                Here&#39;s an <strong>example</strong> saved as a link: <a href="index.html?n=holiday&person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&">holiday</a>. It is extended to include fussy eaters <a href="index.html?n=holiday&person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&">here</a>.
             </li>
-            <li>You can include cash <strong>payments </strong>just by having an <img src="images/32px-x.png" style="height: 1.4ex"/> in all but one column.  See how the fussy eaters example was resolved <a href="?person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&item5=Linda%20lent%20Fr%20M%20%C2%A350&amt5=50.00&cur5=&payer5=Ms%20McCartney&prop5_0=0&prop5_1=0&prop5_2=1&item6=Jez%20paid%20Linda%20her%20balance&amt6=11.06&cur6=&payer6=Mr%20Clarkson&prop6_0=0&prop6_1=1&prop6_2=0&">here</a>.</li>
+            <li>You can include cash <strong>payments </strong>just by having an <img src="images/32px-x.png" style="height: 1.4ex"/> in all but one column.  See how the fussy eaters example was resolved <a href="?n=holiday&person0=Mr%20Clarkson&person1=Ms%20McCartney&person2=Fr%20Mathew&item0=Luxury%20holiday%20cottage&amt0=250.00&cur0=&payer0=Mr%20Clarkson&prop0_0=1&prop0_1=1&prop0_2=1&item1=Beef%20fillet&amt1=50.00&cur1=&payer1=Mr%20Clarkson&prop1_0=1&prop1_1=0&prop1_2=1&item2=Fine%20wines&amt2=6.99&cur2=&payer2=Ms%20McCartney&prop2_0=1&prop2_1=1&prop2_2=0&item3=Train%20fares%20x2&amt3=83.50&cur3=&payer3=Ms%20McCartney&prop3_0=0&prop3_1=1&prop3_2=1&item4=Lentils&amt4=2.13&cur4=&payer4=Fr%20Mathew&prop4_0=0.5&prop4_1=1&prop4_2=1&item5=Linda%20lent%20Fr%20M%20%C2%A350&amt5=50.00&cur5=&payer5=Ms%20McCartney&prop5_0=0&prop5_1=0&prop5_2=1&item6=Jez%20paid%20Linda%20her%20balance&amt6=11.06&cur6=&payer6=Mr%20Clarkson&prop6_0=0&prop6_1=1&prop6_2=0&">here</a>.</li>
             <li><strong>Currencies </strong>don't do anything yet -- you can just leave them blank.</li>
             <li>Nothing you enter here is saved on any other server or stored as a cookie anywhere—it's all in the URL. 
-            Notice you can bitly the link: <a href='http://bit.ly/12UoN6T'>http://bit.ly/12UoN6T</a>.  This means that bitly is storing your state, not me.   (Thanks to Jamie for that mind-bender).
-            </li>
+            Notice you can bitly the link: <a href='http://bit.ly/12UoN6T'>http://bit.ly/12UoN6T</a>.  This means that bitly is storing your state, not me.   (Thanks to Jamie for that bit of lateral thinking).&nbsp;&nbsp; It also means there&#39;s a limit of about 30 items x 10 people.&nbsp; This will probably be fixed fairly soon.</li>
             <li>The source lives <a href="http://github.com/awf/enjoyed-by">here</a>.</li>
             <li>Comments to <a href="mailto:enjoyed-by@fitzgibbon.ie?subject=EnjoyedBy comment&body=">enjoyed-by@fitzgibbon.ie</a>. If you want to be informed of new releases, just send mail to <a href="mailto:enjoyed-by-subscribe@fitzgibbon.ie?subject=Please keep me in the EnjoyedBy loop&body=">enjoyed-by-subscribe@fitzgibbon.ie</a>.</li>
         </ul>

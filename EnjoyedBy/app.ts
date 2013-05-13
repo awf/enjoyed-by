@@ -131,7 +131,7 @@ function button_mail_onclick() {
     mail.click();
 }
 
-class EnjoyedBy {           
+class EnjoyedBy {
     table_expenses: HTMLTableElement;
     //select_element: HTMLSelectElement;
     select_html: string;
@@ -188,7 +188,7 @@ class EnjoyedBy {
             while (matches = re.exec(qs))
                 params[decodeURIComponent(matches[1])] = decodeURIComponent(matches[2]);
 
-            this.project_name.value = params['n'];
+            this.project_name.value = params['n'] || '';
 
             // First count people.  Brute force, as huge numbers of people will kill anything else anyway;
             var nPeople = 0;
@@ -405,8 +405,15 @@ class EnjoyedBy {
         }
 
         var url = '?' + this.save_string;
+
+        if (url.length > 2000) {
+            warn('URL getting long.. It may not work on all browsers.');
+        }
+
         (<HTMLAnchorElement>elt('save_link')).href = url;
         (<HTMLAnchorElement>elt('save_link_2')).href = url;
+        (<HTMLPhraseElement>elt('project_name_2')).innerText = this.project_name.value
+        
         // document.location.search = this.save_string;
 
         if (!all_valid) {
